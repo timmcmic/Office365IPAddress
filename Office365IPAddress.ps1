@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0
+.VERSION 1.0.1
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -158,7 +158,8 @@ Function Out-LogFile
 
 #Define function variables.
 
-$logFileName = (Get-Date -Format FileDateTime)
+#$logFileName = (Get-Date -Format FileDateTime)
+$logFileName = $IPAddressToTest
 
 #Create the log file.
 

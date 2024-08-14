@@ -206,7 +206,7 @@ function get-webURL
         [Parameter(Mandatory = $true)]
         [string]$baseURL,
         [Parameter(Mandatory = $true)]
-        [string]$clientGuid=$FALSE
+        [string]$clientGuid
     )
 
     $functionURL = $NULL
@@ -231,6 +231,7 @@ $logFileName = $IPAddressToTest.replace(".","-")
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?Format=CSV&ClientRequestId="
 $allVersionInfoURL = $NULL
+$allVersionInfo = $NULL
 
 #Variables to store static URLs for web request data.
 
@@ -259,4 +260,6 @@ $allVersionInfoURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $cli
 
 out-logfile -string $allVersionInfoURL
 
+$allVersionInfo = get-Office365IPInformation -baseURL $allVersionInfoURL
 
+out-logfile -string $allVersionInfo

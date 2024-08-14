@@ -322,3 +322,11 @@ $allIPInformationWorldWide = get-Office365IPInformation -baseURL $allIPInformati
 $allIPInformationChina = get-Office365IPInformation -baseURL $allIPInformationChinaURL
 $allIPInfomrationUSGovGCCHigh = get-Office365IPInformation -baseURL $allIPInformationUSGovGCCHighURL
 $allIPInformationUSGovDOD = get-Office365IPInformation -baseURL $allIPInformationUSGovDODURL
+
+out-logfile -string "Convert IP information from JSON."
+
+$allIPInformationWorldWide = get-jsonData -data $allIPInformationWorldWide
+$allIPInformationChina = get-jsonData -data $allIPInformationChina
+$allIPInfomrationUSGovGCCHigh = get-jsonData -data $allIPInfomrationUSGovGCCHigh
+$allIPInformationUSGovDOD = get-jsonData -data $allIPInformationUSGovDOD
+

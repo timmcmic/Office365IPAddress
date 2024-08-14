@@ -256,7 +256,7 @@ $logFileName = $IPAddressToTest.replace(".","-")
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
 $allVersionInfoURL = $NULL
-$allVersionInfo = @()
+$allVersionInfo = $NULL
 
 $allIPInformationWorldWideBaseURL = "https://endpoints.office.com/endpoints/Worldwide?ClientRequestId="
 $allIPInformationChinaBaseURL = "https://endpoints.office.com/endpoints/China?ClientRequestId="
@@ -267,6 +267,11 @@ $allIPInformationWorldWideURL = $NULL
 $allIPInformationChinaURL = $NULL
 $allIPInformationUSGovGCCHighURL = $NULL
 $allIPInformationUSGovDODURL = $NULL
+
+$allIPInformationWorldWide = $NULL
+$allIPInformationChina = $NULL
+$allIPInfomrationUSGovGCCHigh = $NULL
+$allIPInformationUSGovDOD = $NULL
 
 #Create the log file.
 
@@ -310,3 +315,10 @@ $allIPInformationUSGovGCCHighURL = get-webURL -baseURL $allIPInformationUSGovGCC
 out-logfile -string $allIPInformationUSGovGCCHighURL
 $allIPInformationUSGovDODURL = get-webURL -baseURL $allIPInformationUSGovDODBaseURL -clientGuid $clientGuid
 out-logfile -string $allIPInformationUSGovDODURL
+
+out-logfile -string "Obtain IP information for all available Office 365 instances."
+
+$allIPInformationWorldWide = get-Office365IPInformation -baseURL $allIPInformationWorldWideURL
+$allIPInformationChina = get-Office365IPInformation -baseURL $allIPInformationChinaURL
+$allIPInfomrationUSGovGCCHigh = get-Office365IPInformation -baseURL $allIPInformationUSGovGCCHighURL
+$allIPInformationUSGovDOD = get-Office365IPInformation -baseURL $allIPInformationUSGovDODURL

@@ -220,6 +220,31 @@ function get-webURL
     return $functionURL
 }
 
+function get-jsonData
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [string]$data
+    )
+
+    $functionData = $NULL
+
+    out-logfile -string "Entering get-jsonData"
+
+    try {
+        $functionData = convertFrom-Json $data -errorAction Stop
+    }
+    catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to convert json data." -isError:$true
+    }
+
+    out-logfile -string "Exiting get-jsonData"
+
+    return $functionData
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -229,7 +254,7 @@ function get-webURL
 $logFileName = $IPAddressToTest.replace(".","-")
 
 $clientGuid = $NULL
-$allVersionInfoBaseURL = "https://endpoints.office.com/version?Format=CSV&ClientRequestId="
+$allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
 $allVersionInfoURL = $NULL
 $allVersionInfo = @()
 
@@ -256,7 +281,7 @@ $allVersionInfoURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $cli
 
 out-logfile -string $allVersionInfoURL
 
-$allVersionInfo += get-Office365IPInformation -baseURL $allVersionInfoURL
+$allVersionInfo = get-jsonData -data $allVersionInfo
 
 foreach ($version in $allVersionInfo)
 {

@@ -339,6 +339,39 @@ function get-IPLocationInformation
     return $functionData
 }
 
+Function Test-PowershellVersion
+     {
+        [cmdletbinding()]
+
+        $functionPowerShellVersion = $NULL
+
+        out-logfile -string "Entering Test-PowerShellVersion"
+
+        #Write function parameter information and variables to a log file.
+
+        $functionPowerShellVersion = $PSVersionTable.PSVersion
+
+        out-logfile -string "Determining powershell version."
+        out-logfile -string ("Major: "+$functionPowerShellVersion.major)
+        out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
+        out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
+        out-logfile -string $functionPowerShellVersion
+
+        if ($functionPowerShellVersion.Major -lt 7)
+        {
+            out-logfile -string "Powershell 7 and higher is required to run this script."
+            out-logfile -string "Please run module from Powershell 7.x"
+            out-logfile -string "" -isError:$true
+        }
+        else
+        {
+            out-logfile -string "Powershell version is not powershell 5.X proceed."
+        }
+
+        out-logfile -string "Exiting Test-PowerShellVersion"
+
+    }
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -393,6 +426,8 @@ out-logfile -string $outputXMLFile
 out-logfile -string "*********************************************************************************"
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
+
+Test-PowerShellVersion
 
 out-logfile -string "Obtaining client guid for web requests."
 

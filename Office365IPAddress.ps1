@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.1
+.VERSION 1.0.2
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -149,7 +149,23 @@ Function Out-LogFile
     }
 }
 
+function get-ClientGuid
+{
+    $functionClientGuid = $NULL
 
+    out-logfile -string "Entering new-ClientGuid"
+
+    try
+    {   
+        out-logfile -string "Obtain client GUID."
+        $functionClientGuid = new-GUID -errorAction STOP
+        out-logfile -string "Client GUID obtained successfully."
+    }
+    catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to obtain client GUID." -isError:$true
+    }
+}
 
 
 #=====================================================================================
@@ -158,8 +174,13 @@ Function Out-LogFile
 
 #Define function variables.
 
-#$logFileName = (Get-Date -Format FileDateTime)
 $logFileName = $IPAddressToTest.replace(".","-")
+
+$clientGuid = $NULL
+
+#Variables to store static URLs for web request data.
+
+
 
 #Create the log file.
 
@@ -170,3 +191,7 @@ new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 out-logfile -string "*********************************************************************************"
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
+
+out-logfile -string "Obtaining client guid for web requests."
+
+$clientGuid = get-ClientGuid

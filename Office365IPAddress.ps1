@@ -257,6 +257,11 @@ function test-IPSpace
 
     out-logfile -string "Entering test-IPSpace"
 
+    foreach ($entry in $dataToTest)
+    {
+        Out-logfile -string ("Testing entry id: "+$entry.id)
+    }
+
     out-logfile -string "Exiting test-IPSpace"
 }
 

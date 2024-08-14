@@ -159,7 +159,7 @@ Function Out-LogFile
 #Define function variables.
 
 #$logFileName = (Get-Date -Format FileDateTime)
-$logFileName = $IPAddressToTest
+$logFileName = $IPAddressToTest.replace(".","-")
 
 #Create the log file.
 

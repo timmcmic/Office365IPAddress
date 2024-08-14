@@ -42,7 +42,7 @@ Param(
     [Parameter(Mandatory = $false)]
     [string]$IPAddressToTest="",
     [Parameter(Mandatory = $true)]
-    [string]$logFolderPath=$NULL,
+    [string]$logFolderPath=$NULL
 )
 
 Function new-LogFile
@@ -156,6 +156,9 @@ Function Out-LogFile
 #Begin main function body.
 #=====================================================================================
 
+#Define function variables.
+
+$logFileName = (Get-Date -Format FileDateTime)
 
 #Create the log file.
 

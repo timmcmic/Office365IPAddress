@@ -318,6 +318,7 @@ function get-IPLocationInformation
     catch {
         out-logfile -string $_
         out-logfile -string "Unable to invoke web request for geolocation lookup."
+        $functionData = ""
     }
 
     out-logfile -string "Exiting get-IPLocationInformation"

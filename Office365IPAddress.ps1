@@ -42,7 +42,9 @@ Param(
     [Parameter(Mandatory = $false)]
     [string]$IPAddressToTest="",
     [Parameter(Mandatory = $true)]
-    [string]$logFolderPath=$NULL
+    [string]$logFolderPath=$NULL,
+    [Parameter(Mandatory = $true)]
+    [boolean]$allowQueryIPLocationInformationFromThirdParty
 )
 
 Function new-LogFile
@@ -296,6 +298,33 @@ function test-IPSpace
     out-logfile -string "Exiting test-IPSpace"
 }
 
+function get-IPLocationInformation
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $ipAddress
+    )
+
+    $functionData = ""
+    $ipLocationProvider = "https://api.country.is1/"
+    $ipLocationQuery = $ipLocationProvider+$ipAddress
+
+    out-logfile -string "Entering get-IPLocationInformation"
+
+    try {
+        $functionData = invoke-WebRequest $ipLocationQuery
+    }
+    catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to invoke web request for geolocation lookup."
+    }
+
+    out-logfile -string "Exiting get-IPLocationInformation"
+
+    return $functionData
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -325,6 +354,8 @@ $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
 
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
+
+$ipLocation = $NULL
 
 $global:outputArray = @()
 
@@ -394,8 +425,13 @@ test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest
 
 if ($global:outputArray.count -gt 0)
 {
+    $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
+
+    $ipLocation = get-jsonData -data $ipLocation
+
     out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ "was located in the following Office 365 Services:")
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
+    out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
 
     foreach ($entry in $global:outputArray)
     {

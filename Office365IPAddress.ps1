@@ -255,6 +255,8 @@ function test-IPSpace
         $IPAddress
     )
 
+    $functionNetwork = $NULL
+
     out-logfile -string "Entering test-IPSpace"
 
     foreach ($entry in $dataToTest)
@@ -268,6 +270,10 @@ function test-IPSpace
             foreach ($ipEntry in $entry.ips)
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
+
+                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+
+                 out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
             }
         }
         else 
@@ -306,8 +312,6 @@ $allIPInformationWorldWide = $NULL
 $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
-
-$ipAddressFound = $false
 
 $global:outputArray = @()
 

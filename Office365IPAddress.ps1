@@ -274,6 +274,17 @@ function test-IPSpace
                  $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
 
                  out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                 if ($functionNetwork.Contains($ipEntry))
+                 {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $global:outputArray += $entry
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
             }
         }
         else 

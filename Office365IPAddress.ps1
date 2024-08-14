@@ -324,6 +324,8 @@ $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
 
+$outputCSVFile = $global:LogFile.replace(".log",".csv")
+
 $global:outputArray = @()
 
 #Create the log file.
@@ -397,14 +399,23 @@ if ($global:outputArray.count -gt 0)
 
     foreach ($entry in $global:outputArray)
     {
-        out-logfile -string $entry.id
-        out-logfile -string $entry.serviceArea
-        out-logfile -string $entry.serviceDisplayName
-        out-logfile -string $entry.urls
-        out-logfile -string $entry.ips
-        out-logfile -string $entry.tcpPorts
-        out-logfile -string $entry.expressRoute
-        out-logfile -string $entry.category
-        out-logfile -string $entry.required
+        out-logfile -string $entry
     }
+
+    foreach ($entry in $global:outputArray)
+    {
+        $entry
+    }
+
+    $global:outputArray | export-csv -path $outputCSVFile
+
+    out-logfile -string "A CSV file containing the above entries is available in the log directory."
+    out-logfile -string "******************************************************"
 }
+else 
+{
+    out-logfile -string "******************************************************"
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ "was NOT located in the following Office 365 Services.")
+    out-logfile -string "******************************************************"
+}
+

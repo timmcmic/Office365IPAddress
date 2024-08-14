@@ -355,7 +355,7 @@ $allIPInformationUSGovDOD = $NULL
 
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
 
-$ipLocation = $NULL
+$ipLocation = ""
 
 $global:outputArray = @()
 
@@ -425,14 +425,21 @@ test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest
 
 if ($global:outputArray.count -gt 0)
 {
-    $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
+    if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)
+    {
+        $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
 
-    $ipLocation = get-jsonData -data $ipLocation
+        $ipLocation = get-jsonData -data $ipLocation
+    }
 
     out-logfile -string "******************************************************"
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
-    out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
 
+    if ($ipInformation -ne "")
+    {   
+        out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
+    }
+    
     foreach ($entry in $global:outputArray)
     {
         out-logfile -string $entry

@@ -261,9 +261,12 @@ function test-IPSpace
     {
         Out-logfile -string ("Testing entry id: "+$entry.id)
 
-        foreach ($ipEntry in $entry.ips)
+        if ($entry.ips.count -gt 0)
         {
-            out-logfile -string ("Testing entry IP: "+$ipEntry)
+            foreach ($ipEntry in $entry.ips)
+            {
+                out-logfile -string ("Testing entry IP: "+$ipEntry)
+            }
         }
     }
 

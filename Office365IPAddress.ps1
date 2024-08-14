@@ -171,6 +171,32 @@ function get-ClientGuid
     return $functionClientGuid
 }
 
+function get-Office365IPAddressVersionInfo
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $String,
+        [Parameter(Mandatory = $false)]
+        [boolean]$isError=$FALSE
+    )
+
+    $functionVersionInfo = $NULL
+
+    out-logfile -string "Entering get-Office365IPAddressVersionInfo"
+
+    try
+    {   
+    }
+    catch {
+    }
+
+    out-logfile -string "Exiting get-Office365IPAddressVersionInfo"
+
+    return $functionClientGuid
+}
+
+
 
 #=====================================================================================
 #Begin main function body.
@@ -181,6 +207,7 @@ function get-ClientGuid
 $logFileName = $IPAddressToTest.replace(".","-")
 
 $clientGuid = $NULL
+$allVersionInfoBaseURL = "https://endpoints.office.com/version?Format=CSV&ClientRequestId="
 
 #Variables to store static URLs for web request data.
 
@@ -201,3 +228,5 @@ out-logfile -string "Obtaining client guid for web requests."
 $clientGuid = get-ClientGuid
 
 out-logfile -string $clientGuid
+
+https://endpoints.office.com/version?Format=CSV&ClientRequestId=b10c5ed1-bad1-445f-b386-b919946339a7

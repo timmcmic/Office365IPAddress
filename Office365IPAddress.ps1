@@ -408,8 +408,6 @@ $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
 
-$outputXMLFile = $global:LogFile.replace(".log",".xml")
-
 $ipLocation = ""
 
 $global:outputArray = @()
@@ -417,6 +415,8 @@ $global:outputArray = @()
 #Create the log file.
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
+
+$outputXMLFile = $global:LogFile.replace(".log",".xml")
 
 out-logfile -string $global:LogFile
 out-logfile -string $outputXMLFile

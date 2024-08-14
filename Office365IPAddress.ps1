@@ -258,6 +258,16 @@ $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
 $allVersionInfoURL = $NULL
 $allVersionInfo = @()
 
+$allIPInformationWorldWideBaseURL = "https://endpoints.office.com/endpoints/Worldwide?ClientRequestId="
+$allIPInformationChinaBaseURL = "https://endpoints.office.com/endpoints/China?ClientRequestId="
+$allIPInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/endpoints/USGovGCCHigh?ClientRequestId="
+$allIPInformationUSGovDODBaseURL = "https://endpoints.office.com/endpoints/USGovDOD?ClientRequestId="
+
+$allIPInformationWorldWideURL = $NULL
+$allIPInformationChinaURL = $NULL
+$allIPInformationUSGovGCCHighURL = $NULL
+$allIPInformationUSGovDODBaseURL = $NULL
+
 #Create the log file.
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
@@ -287,7 +297,16 @@ $allVersionInfo = get-jsonData -data $allVersionInfo
 
 foreach ($version in $allVersionInfo)
 {
-    out-logfile -string $version.instance
     out-logfile -string ("Instance: "+$version.instance+" VersionInfo: "+$version.latest)
 }
 
+out-logfile -string "Calculate URLS for Office 365 IP Addresses"
+
+$allIPInformationWorldWideBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationWorldWideBaseURL
+$allIPInformationChinaBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationChinaBaseURL
+$allIPInformationUSGovGCCHighUBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationUSGovGCCHighUBaseUR
+$allIPInformationUSGovDODBaseBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationUSGovDODBaseBaseUR

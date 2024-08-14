@@ -442,7 +442,7 @@ if ($global:outputArray.count -gt 0)
     out-logfile -string "******************************************************"
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
 
-    if ($ipInformation -ne "")
+    if ($ipInformation -ne "Failed")
     {   
         out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
     }

@@ -199,3 +199,5 @@ out-logfile -string "***********************************************************
 out-logfile -string "Obtaining client guid for web requests."
 
 $clientGuid = get-ClientGuid
+
+out-logfile -string $clientGuid

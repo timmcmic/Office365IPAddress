@@ -258,4 +258,7 @@ out-logfile -string $allVersionInfoURL
 
 $allVersionInfo = get-Office365IPInformation -baseURL $allVersionInfoURL
 
-out-logfile -string $allVersionInfo
+foreach ($version in $allVersionInfo)
+{
+    out-logfile -string ("Instance: "+$version.instance+" VersionInfo: "+$version.latest)
+}

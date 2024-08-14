@@ -231,7 +231,7 @@ $logFileName = $IPAddressToTest.replace(".","-")
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?Format=CSV&ClientRequestId="
 $allVersionInfoURL = $NULL
-$allVersionInfo = $NULL
+$allVersionInfo = @()
 
 #Create the log file.
 
@@ -256,7 +256,7 @@ $allVersionInfoURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $cli
 
 out-logfile -string $allVersionInfoURL
 
-$allVersionInfo = get-Office365IPInformation -baseURL $allVersionInfoURL
+$allVersionInfo += get-Office365IPInformation -baseURL $allVersionInfoURL
 
 foreach ($version in $allVersionInfo)
 {

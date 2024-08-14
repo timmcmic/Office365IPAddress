@@ -430,6 +430,8 @@ if ($global:outputArray.count -gt 0)
     {
         $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
 
+        out-logfile -string $ipLocation
+
         if ($ipLocation -ne "")
         {
             $ipLocation = get-jsonData -data $ipLocation

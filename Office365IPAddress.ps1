@@ -266,7 +266,7 @@ $allIPInformationUSGovDODBaseURL = "https://endpoints.office.com/endpoints/USGov
 $allIPInformationWorldWideURL = $NULL
 $allIPInformationChinaURL = $NULL
 $allIPInformationUSGovGCCHighURL = $NULL
-$allIPInformationUSGovDODBaseURL = $NULL
+$allIPInformationUSGovDODURL = $NULL
 
 #Create the log file.
 
@@ -302,11 +302,11 @@ foreach ($version in $allVersionInfo)
 
 out-logfile -string "Calculate URLS for Office 365 IP Addresses"
 
-$allIPInformationWorldWideBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
-out-logfile -string $allIPInformationWorldWideBaseURL
-$allIPInformationChinaBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
-out-logfile -string $allIPInformationChinaBaseURL
-$allIPInformationUSGovGCCHighUBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
-out-logfile -string $allIPInformationUSGovGCCHighUBaseUR
-$allIPInformationUSGovDODBaseBaseURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $clientGuid
-out-logfile -string $allIPInformationUSGovDODBaseBaseUR
+$allIPInformationWorldWideURL = get-webURL -baseURL $allIPInformationWorldWideBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationWorldWideURL
+$allIPInformationChinaURL = get-webURL -baseURL $allIPInformationChinaBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationChinaURL
+$allIPInformationUSGovGCCHighURL = get-webURL -baseURL $allIPInformationUSGovGCCHighBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationUSGovGCCHighURL
+$allIPInformationUSGovDODURL = get-webURL -baseURL $allIPInformationUSGovDODBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPInformationUSGovDODURL

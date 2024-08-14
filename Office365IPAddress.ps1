@@ -245,6 +245,21 @@ function get-jsonData
     return $functionData
 }
 
+function test-IPSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $IPAddress
+    )
+
+    out-logfile -string "Entering test-IPSpace"
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -272,6 +287,10 @@ $allIPInformationWorldWide = $NULL
 $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
+
+$ipAddressFound = $false
+
+$global:outputArray = @()
 
 #Create the log file.
 
@@ -330,3 +349,6 @@ $allIPInformationChina = get-jsonData -data $allIPInformationChina
 $allIPInfomrationUSGovGCCHigh = get-jsonData -data $allIPInfomrationUSGovGCCHigh
 $allIPInformationUSGovDOD = get-jsonData -data $allIPInformationUSGovDOD
 
+out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
+
+test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest

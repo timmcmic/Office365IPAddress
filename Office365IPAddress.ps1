@@ -186,7 +186,7 @@ function get-Office365IPInformation
     try
     {   
         out-logfile -string 'Invoking web request for information...'
-        $functionVersionInfo Invoke-WebRequest -Uri $baseURL -errorAction:STOP
+        $functionVersionInfo = Invoke-WebRequest -Uri $baseURL -errorAction:STOP
         out-logfile -string 'Invoking web request complete...'
     }
     catch {
@@ -232,10 +232,6 @@ $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?Format=CSV&ClientRequestId="
 $allVersionInfoURL = $NULL
 $allVersionInfo = $NULL
-
-#Variables to store static URLs for web request data.
-
-
 
 #Create the log file.
 

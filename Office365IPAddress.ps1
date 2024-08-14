@@ -176,9 +176,7 @@ function get-Office365IPInformation
     Param
     (
         [Parameter(Mandatory = $true)]
-        $String,
-        [Parameter(Mandatory = $false)]
-        [boolean]$isError=$FALSE
+        $baseURL
     )
 
     $functionVersionInfo = $NULL
@@ -187,13 +185,18 @@ function get-Office365IPInformation
 
     try
     {   
+        out-logfile -string 'Invoking web request for information...'
+        $functionVersionInfo Invoke-WebRequest -Uri $baseURL -errorAction:STOP
+        out-logfile -string 'Invoking web request complete...'
     }
     catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
     }
 
     out-logfile -string "Exiting get-Office365IPInformation"
 
-    return $functionClientGuid
+    return $functionVersionInfo
 }
 
 function get-webURL

@@ -225,7 +225,7 @@ function get-jsonData
     Param
     (
         [Parameter(Mandatory = $true)]
-        [string]$data
+        $data
     )
 
     $functionData = $NULL
@@ -281,11 +281,13 @@ $allVersionInfoURL = get-webURL -baseURL $allVersionInfoBaseURL -clientGuid $cli
 
 out-logfile -string $allVersionInfoURL
 
+$allVersionInfo = get-Office365IPInformation -baseURL $allVersionInfoURL
+
 $allVersionInfo = get-jsonData -data $allVersionInfo
 
 foreach ($version in $allVersionInfo)
 {
-    out-logfile $version
     out-logfile -string $version.instance
     out-logfile -string ("Instance: "+$version.instance+" VersionInfo: "+$version.latest)
 }
+

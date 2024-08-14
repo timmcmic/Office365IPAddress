@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.2
+.VERSION 1.0.3
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -332,7 +332,15 @@ function get-IPLocationInformation
 
 #Define function variables.
 
-$logFileName = $IPAddressToTest.replace(".","-")
+if ($IPAddressToTest.contains("."))
+{
+    $logFileName = $IPAddressToTest.replace(".","-")
+}
+else 
+{
+    $logFileName = $IPAddressToTest.replace(":","-")
+}
+
 
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
@@ -363,6 +371,9 @@ $global:outputArray = @()
 #Create the log file.
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
+
+out-logfile -string $global:LogFile
+out-logfile -string $outputXMLFile
 
 #Start logging
 
@@ -439,6 +450,8 @@ if ($global:outputArray.count -gt 0)
         }
     }
 
+    out-logfile -string "*"
+    out-logfile -string "**"
     out-logfile -string "******************************************************"
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
 
@@ -446,21 +459,23 @@ if ($global:outputArray.count -gt 0)
     {   
         out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
     }
-    
-    foreach ($entry in $global:outputArray)
-    {
-        out-logfile -string $entry
-    }
 
     foreach ($entry in $global:outputArray)
     {
         $entry
     }
 
-    $global:outputArray | Export-Clixml -Path $outputXMLFile
-
     out-logfile -string "A XML file containing the above entries is available in the log directory."
     out-logfile -string "******************************************************"
+    out-logfile -string "**"
+    out-logfile -string "*"
+
+    foreach ($entry in $global:outputArray)
+    {
+        out-logfile -string $entry
+    }
+
+    $global:outputArray | Export-Clixml -Path $outputXMLFile
 }
 else 
 {

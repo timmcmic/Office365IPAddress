@@ -275,7 +275,7 @@ function test-IPSpace
 
                  out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
 
-                 if ($functionNetwork.Contains($ipEntry))
+                 if ($functionNetwork.Contains($IPAddress))
                  {
                     out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
@@ -386,3 +386,25 @@ $allIPInformationUSGovDOD = get-jsonData -data $allIPInformationUSGovDOD
 out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 
 test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest
+test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest
+test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest
+test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest
+
+if ($global:outputArray.count -gt 0)
+{
+    out-logfile -string "******************************************************"
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ "was located in the following Office 365 Services:")
+
+    foreach ($entry in $global:outputArray)
+    {
+        out-logfile -string $entry.id
+        out-logfile -string $entry.serviceArea
+        out-logfile -string $entry.serviceDisplayName
+        out-logfile -string $entry.urls
+        out-logfile -string $entry.ips
+        out-logfile -string $entry.tcpPorts
+        out-logfile -string $entry.expressRoute
+        out-logfile -string $entry.category
+        out-logfile -string $entry.required
+    }
+}

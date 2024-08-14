@@ -201,9 +201,9 @@ function get-webURL
     Param
     (
         [Parameter(Mandatory = $true)]
-        $baseURL,
+        [string]$baseURL,
         [Parameter(Mandatory = $true)]
-        [boolean]$clientGuid=$FALSE
+        [string]$clientGuid=$FALSE
     )
 
     $functionURL = $NULL
@@ -246,6 +246,7 @@ out-logfile -string "***********************************************************
 out-logfile -string "Obtaining client guid for web requests."
 
 $clientGuid = get-ClientGuid
+$clientGUid = $clinetGuid.tostring()    
 
 out-logfile -string $clientGuid
 

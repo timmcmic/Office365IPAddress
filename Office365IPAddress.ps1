@@ -246,7 +246,7 @@ out-logfile -string "***********************************************************
 out-logfile -string "Obtaining client guid for web requests."
 
 $clientGuid = get-ClientGuid
-$clientGUid = $clinetGuid.tostring()    
+$clientGUid = $clientGuid.tostring()    
 
 out-logfile -string $clientGuid
 

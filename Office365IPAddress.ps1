@@ -263,10 +263,16 @@ function test-IPSpace
 
         if ($entry.ips.count -gt 0)
         {
+            out-logfile -string "IP count > 0"
+
             foreach ($ipEntry in $entry.ips)
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
             }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
         }
     }
 

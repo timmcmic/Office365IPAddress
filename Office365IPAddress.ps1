@@ -165,6 +165,10 @@ function get-ClientGuid
         out-logfile -string $_
         out-logfile -string "Unable to obtain client GUID." -isError:$true
     }
+
+    out-logfile -string "Exiting new-ClientGuid"
+
+    return $functionClientGuid
 }
 
 

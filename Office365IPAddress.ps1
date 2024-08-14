@@ -307,7 +307,7 @@ function get-IPLocationInformation
     )
 
     $functionData = ""
-    $ipLocationProvider = "https://api.country.is1/"
+    $ipLocationProvider = "https://api.country.is/"
     $ipLocationQuery = $ipLocationProvider+$ipAddress
 
     out-logfile -string "Entering get-IPLocationInformation"
@@ -442,7 +442,7 @@ if ($global:outputArray.count -gt 0)
     out-logfile -string "******************************************************"
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
 
-    if ($ipInformation -ne "Failed")
+    if ($ipLocation -ne "Failed")
     {   
         out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
     }

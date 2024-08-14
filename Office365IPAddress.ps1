@@ -324,7 +324,7 @@ $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
 
-$outputCSVFile = $global:LogFile.replace(".log",".csv")
+$outputXMLFile = $global:LogFile.replace(".log",".xml")
 
 $global:outputArray = @()
 
@@ -407,9 +407,9 @@ if ($global:outputArray.count -gt 0)
         $entry
     }
 
-    $global:outputArray | export-csv -path $outputCSVFile
+    $global:outputArray | Export-Clixml -Path $outputXMLFile
 
-    out-logfile -string "A CSV file containing the above entries is available in the log directory."
+    out-logfile -string "A XML file containing the above entries is available in the log directory."
     out-logfile -string "******************************************************"
 }
 else 

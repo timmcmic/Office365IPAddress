@@ -415,7 +415,7 @@ if ($global:outputArray.count -gt 0)
 else 
 {
     out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ "was NOT located in the following Office 365 Services.")
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
     out-logfile -string "******************************************************"
 }
 

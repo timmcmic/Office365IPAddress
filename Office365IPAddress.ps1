@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.3
+.VERSION 1.1
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -281,7 +281,20 @@ function test-IPSpace
                  {
                     out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                    $global:outputArray += $entry
+                    $outputObject = new-Object psObject -property @{
+                        ID = $entry.ID
+                        ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
+                        URLs = $entry.URLs
+                        IPs = $entry.ips
+                        IPInSubnet = $ipEntry
+                        TCPPorts = $entry.tcpports
+                        ExpressRoute = $entry.expressRoute
+                        Required = $entry.required
+                    }
+
+                    out-logfile -string $outputObject
+
+                    $global:outputArray += $outputObject
                  }
                  else
                  {

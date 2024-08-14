@@ -318,7 +318,7 @@ function get-IPLocationInformation
     catch {
         out-logfile -string $_
         out-logfile -string "Unable to invoke web request for geolocation lookup."
-        $functionData = ""
+        $functionData = "Failed"
     }
 
     out-logfile -string "Exiting get-IPLocationInformation"
@@ -432,8 +432,9 @@ if ($global:outputArray.count -gt 0)
 
         out-logfile -string $ipLocation
 
-        if ($ipLocation -ne "")
+        if ($ipLocation -ne "Failed")
         {
+            out-logfile -string "Converting IP location JSON."
             $ipLocation = get-jsonData -data $ipLocation
         }
     }

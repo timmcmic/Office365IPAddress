@@ -254,7 +254,9 @@ function test-IPSpace
         [Parameter(Mandatory = $true)]
         $dataToTest,
         [Parameter(Mandatory = $true)]
-        $IPAddress
+        $IPAddress,
+        [Parameter(Mandatory = $true)]
+        $RegionString
     )
 
     $functionNetwork = $NULL
@@ -282,6 +284,7 @@ function test-IPSpace
                     out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
                     $outputObject = new-Object psObject -property @{
+                        M365Instance = $regionString
                         ID = $entry.ID
                         ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
                         URLs = $entry.URLs
@@ -408,6 +411,11 @@ $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
 
+$worldWideRegionString = "Microsoft 365 Worldwide (+GCC)"
+$chinaRegionString = "Microsoft 365 operated by 21 Vianet"
+$gccHighRegionString = "Microsoft 365 U.S. Government GCC High"
+$dodRegionString = "Microsoft 365 U.S. Government DoD"
+
 $ipLocation = ""
 
 $global:outputArray = @()
@@ -478,10 +486,10 @@ $allIPInformationUSGovDOD = get-jsonData -data $allIPInformationUSGovDOD
 
 out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 
-test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest
-test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest
-test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest
-test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest
+test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString
+test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString
+test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString
+test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString
 
 if ($global:outputArray.count -gt 0)
 {

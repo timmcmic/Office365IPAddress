@@ -509,7 +509,7 @@ if ($global:outputArray.count -gt 0)
     out-logfile -string "*"
     out-logfile -string "**"
     out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services:")
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services.")
 
     if ($ipLocation -ne "Failed")
     {   

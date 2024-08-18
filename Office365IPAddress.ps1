@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.2
+.VERSION 1.1.3
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -509,7 +509,7 @@ if ($global:outputArray.count -gt 0)
     out-logfile -string "*"
     out-logfile -string "**"
     out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in the following Office 365 Services:")
+    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services:")
 
     if ($ipLocation -ne "Failed")
     {   

@@ -512,9 +512,11 @@ $global:outputChangeArray=@()
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
+$outputChangeXMLFile = $global:LogFile.replace(".log","Adds.xml")
 
 out-logfile -string $global:LogFile
 out-logfile -string $outputXMLFile
+out-logfile -string $outputChangeXMLFile
 
 #Start logging
 
@@ -638,6 +640,11 @@ if ($global:outputArray.count -gt 0)
         $entry
     }
 
+    foreach ($entry in $global:outputChangeArray)
+    {
+        $entry
+    }
+
     out-logfile -string "A XML file containing the above entries is available in the log directory."
     out-logfile -string "******************************************************"
     out-logfile -string "**"
@@ -649,6 +656,13 @@ if ($global:outputArray.count -gt 0)
     }
 
     $global:outputArray | Export-Clixml -Path $outputXMLFile
+
+    foreach ($entry in $global:outputChangeArray)
+    {
+        out-logfile -string $entry
+    }
+
+    $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
 }
 else 
 {

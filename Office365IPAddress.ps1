@@ -650,14 +650,12 @@ if ($global:outputArray.count -gt 0)
     if ($global:outputChangeArray)
     {
         write-host "IP entries present in the changes file:"
-        
+
         foreach ($entry in $global:outputChangeArray)
         {
             $entry
         }
     }
-
-
 
     out-logfile -string "A XML file containing the above entries is available in the log directory."
     out-logfile -string "******************************************************"

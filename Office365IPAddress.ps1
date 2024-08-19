@@ -715,8 +715,6 @@ else
     out-logfile -string "The IP address was found - no need to test for removals."
 }
 
-exit
-
 if ($global:outputArray.count -gt 0)
 {
     if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)

@@ -314,6 +314,73 @@ function test-IPSpace
     out-logfile -string "Exiting test-IPSpace"
 }
 
+function test-IPChangeSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $IPAddress,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionNetwork = $NULL
+
+    out-logfile -string "Entering test-IPSpace"
+
+    foreach ($entry in $dataToTest)
+    {
+        Out-logfile -string ("Testing change entry id: "+$entry.id)
+
+        if ($entry.adds.ips.count -gt 0)
+        {
+            out-logfile -string "IP count > 0"
+
+            foreach ($ipEntry in $entry.adds.ips)
+            {
+                out-logfile -string ("Testing entry IP: "+$ipEntry)
+
+                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+
+                 out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                 if ($functionNetwork.Contains($IPAddress))
+                 {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $outputObject = new-Object psObject -property @{
+                        M365Instance = $regionString
+                        ID = $entry.ID
+                        ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
+                        URLs = $entry.URLs
+                        IPs = $entry.ips
+                        IPInSubnet = $ipEntry
+                        TCPPorts = $entry.tcpports
+                        ExpressRoute = $entry.expressRoute
+                        Required = $entry.required
+                    }
+
+                    out-logfile -string $outputObject
+
+                    $global:outputArray += $outputObject
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
 function get-IPLocationInformation
 {
     Param
@@ -435,6 +502,7 @@ $dodRegionString = "Microsoft 365 U.S. Government DoD"
 $ipLocation = ""
 
 $global:outputArray = @()
+$global:outputChangeArray=@()
 
 #Create the log file.
 

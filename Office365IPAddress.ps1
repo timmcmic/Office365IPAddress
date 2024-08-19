@@ -337,7 +337,7 @@ function test-IPChangeSpace
     {
         Out-logfile -string ("Testing change entry id: "+$entry.id)
 
-        if ($entry.adds.ips.count -gt 0)
+        if ($entry.add.ips.count -gt 0)
         {
             out-logfile -string "IP count > 0"
 

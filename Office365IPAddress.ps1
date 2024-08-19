@@ -341,7 +341,7 @@ function test-IPChangeSpace
         {
             out-logfile -string "IP count > 0"
 
-            foreach ($ipEntry in $entry.adds.ips)
+            foreach ($ipEntry in $entry.add.ips)
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
 

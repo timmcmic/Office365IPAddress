@@ -389,6 +389,81 @@ function test-IPChangeSpace
     out-logfile -string "Exiting test-IPSpace"
 }
 
+function test-IPRemoveSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $changeDataToTest,
+        [Parameter(Mandatory = $true)]
+        $IPAddress,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionNetwork = $NULL
+    $functionOriginalID = $null
+
+    out-logfile -string "Entering test-IPSpace"
+
+    foreach ($entry in $changeDataToTest)
+    {
+        Out-logfile -string ("Testing change entry id: "+$entry.id)
+
+        if ($entry.remove.ips.count -gt 0)
+        {
+            out-logfile -string "IP count > 0"
+
+            foreach ($ipEntry in $entry.remove.ips)
+            {
+                out-logfile -string ("Testing entry IP: "+$ipEntry)
+
+                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+
+                 out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                 if ($functionNetwork.Contains($IPAddress))
+                 {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
+
+                    if ($functionOriginalID -eq "")
+                    {
+                        $functionOriginalID = "Endpoint Set ID No Longer Active"
+                    }
+
+                    $outputObject = new-Object psObject -property @{
+                        M365Instance = $regionString
+                        ChangeID = $entry.ID
+                        EndpointSetID = $entry.endpointSetId
+                        Version = $entry.Version
+                        ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                        IPsRemove = $entry.remove.ips
+                        IPInSubnet = $ipEntry
+                    }
+
+                    out-logfile -string $outputObject
+
+                    $global:outputRemoveArray += $outputObject
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
 function get-IPLocationInformation
 {
     Param
@@ -511,6 +586,7 @@ $ipLocation = ""
 
 $global:outputArray = @()
 $global:outputChangeArray=@()
+$global:outputRemoveArray=@()
 
 #Create the log file.
 
@@ -518,6 +594,7 @@ new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
 $outputChangeXMLFile = $global:LogFile.replace(".log","Adds.xml")
+$outputRemoveXMLFile = $global:LogFile.replace(".log","Removes.xml")
 
 out-logfile -string $global:LogFile
 out-logfile -string $outputXMLFile
@@ -615,6 +692,11 @@ test-IPChangeSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTes
 test-IPChangeSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
 test-IPChangeSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
 
+test-IPRemoveSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+test-IPRemoveSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+test-IPRemoveSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+test-IPRemoveSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
+
 if ($global:outputArray.count -gt 0)
 {
     if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)
@@ -695,5 +777,8 @@ else
     out-logfile -string "******************************************************"
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
     out-logfile -string "******************************************************"
+
+    if 
+
 }
 

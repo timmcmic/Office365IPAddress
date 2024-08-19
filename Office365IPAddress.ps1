@@ -321,6 +321,8 @@ function test-IPChangeSpace
         [Parameter(Mandatory = $true)]
         $dataToTest,
         [Parameter(Mandatory = $true)]
+        $changeDataToTest,
+        [Parameter(Mandatory = $true)]
         $IPAddress,
         [Parameter(Mandatory = $true)]
         $RegionString
@@ -352,14 +354,12 @@ function test-IPChangeSpace
 
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
-                        ID = $entry.ID
+                        ChangeID = $entry.ID
+                        EndpointSetID = $entry.endpointSetId
+                        Version = $entry.Version
                         ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
-                        URLs = $entry.URLs
-                        IPs = $entry.ips
+                        IPsAdded = $entry.ips
                         IPInSubnet = $ipEntry
-                        TCPPorts = $entry.tcpports
-                        ExpressRoute = $entry.expressRoute
-                        Required = $entry.required
                     }
 
                     out-logfile -string $outputObject
@@ -599,6 +599,11 @@ test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest 
 test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString
 test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString
 test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString
+
+test-IPChangeSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+test-IPChangeSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+test-IPChangeSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+test-IPChangeSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
 
 if ($global:outputArray.count -gt 0)
 {

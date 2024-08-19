@@ -361,7 +361,7 @@ function test-IPChangeSpace
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
                         ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
-                        IPsAdded = $entry.ips
+                        IPsAdded = $entry.add.ips
                         IPInSubnet = $ipEntry
                     }
 

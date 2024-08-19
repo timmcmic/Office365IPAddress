@@ -401,15 +401,31 @@ $allIPInformationChinaBaseURL = "https://endpoints.office.com/endpoints/China?Cl
 $allIPInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/endpoints/USGovGCCHigh?ClientRequestId="
 $allIPInformationUSGovDODBaseURL = "https://endpoints.office.com/endpoints/USGovDOD?ClientRequestId="
 
+$allIPChangeInformationWorldWideBaseURL = "https://endpoints.office.com/changes/wordwide/0000000000?clientrequestid="
+$allIPChangeInformationChinaBaseURL = "https://endpoints.office.com/changes/china/0000000000?clientrequestid="
+$allIPChangeInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/changes/usgovgcchigh/0000000000?clientrequestid="
+$allIPChangeInformationUSGovDODBaseURL = "https://endpoints.office.com/changes/usgovdod/0000000000?clientrequestid="
+
+
 $allIPInformationWorldWideURL = $NULL
 $allIPInformationChinaURL = $NULL
 $allIPInformationUSGovGCCHighURL = $NULL
 $allIPInformationUSGovDODURL = $NULL
 
+$allIPChangeInformationWorldWideURL = $NULL
+$allIPChangeInformationChinaURL = $NULL
+$allIPChangeInformationUSGovGCCHighURL = $NULL
+$allIPChangeInformationUSGovDODURL = $NULL
+
 $allIPInformationWorldWide = $NULL
 $allIPInformationChina = $NULL
 $allIPInfomrationUSGovGCCHigh = $NULL
 $allIPInformationUSGovDOD = $NULL
+
+$allIPChangeInformationWorldWide = $NULL
+$allIPChangeInformationChina = $NULL
+$allIPChangeInfomrationUSGovGCCHigh = $NULL
+$allIPChangeInformationUSGovDOD = $NULL
 
 $worldWideRegionString = "Microsoft 365 Worldwide (+GCC)"
 $chinaRegionString = "Microsoft 365 operated by 21 Vianet"
@@ -470,6 +486,17 @@ out-logfile -string $allIPInformationUSGovGCCHighURL
 $allIPInformationUSGovDODURL = get-webURL -baseURL $allIPInformationUSGovDODBaseURL -clientGuid $clientGuid
 out-logfile -string $allIPInformationUSGovDODURL
 
+out-logfile -string "Calculate URLS for Office 365 IP Addresses Change"
+
+$allIPChangeInformationWorldWideURL = get-webURL -baseURL $allIPChangeInformationWorldWideBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPChangeInformationWorldWideURL
+$allIPChangeInformationChinaURL = get-webURL -baseURL $allIPChangeInformationChinaBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPChangeInformationChinaURL
+$allIPChangeInformationUSGovGCCHighURL = get-webURL -baseURL $allIPChangeInformationUSGovGCCHighBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPChangeInformationUSGovGCCHighURL
+$allIPChangeInformationUSGovDODURL = get-webURL -baseURL $allIPChangeInformationUSGovDODBaseURL -clientGuid $clientGuid
+out-logfile -string $allIPChangeInformationUSGovDODURL
+
 out-logfile -string "Obtain IP information for all available Office 365 instances."
 
 $allIPInformationWorldWide = get-Office365IPInformation -baseURL $allIPInformationWorldWideURL
@@ -477,12 +504,26 @@ $allIPInformationChina = get-Office365IPInformation -baseURL $allIPInformationCh
 $allIPInfomrationUSGovGCCHigh = get-Office365IPInformation -baseURL $allIPInformationUSGovGCCHighURL
 $allIPInformationUSGovDOD = get-Office365IPInformation -baseURL $allIPInformationUSGovDODURL
 
+out-logfile -string "Obtain IP information for all available Office 365 instances changes."
+
+$allIPChangeInformationWorldWide = get-Office365IPInformation -baseURL $allIPChangeInformationWorldWideURL
+$allIPChangeInformationChina = get-Office365IPInformation -baseURL $allIPChangeInformationChinaURL
+$allIPChangeInfomrationUSGovGCCHigh = get-Office365IPInformation -baseURL $allIPChangeInformationUSGovGCCHighURL
+$allIPChangeInformationUSGovDOD = get-Office365IPInformation -baseURL $allIPChangeInformationUSGovDODURL
+
 out-logfile -string "Convert IP information from JSON."
 
 $allIPInformationWorldWide = get-jsonData -data $allIPInformationWorldWide
 $allIPInformationChina = get-jsonData -data $allIPInformationChina
 $allIPInfomrationUSGovGCCHigh = get-jsonData -data $allIPInfomrationUSGovGCCHigh
 $allIPInformationUSGovDOD = get-jsonData -data $allIPInformationUSGovDOD
+
+out-logfile -string "Convert IP information from JSON changes."
+
+$allIPChangeInformationWorldWide = get-jsonData -data $allIPChangeInformationWorldWide
+$allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
+$allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
+$allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
 
 out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 

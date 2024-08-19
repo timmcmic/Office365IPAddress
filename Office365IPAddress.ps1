@@ -778,7 +778,22 @@ else
     out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
     out-logfile -string "******************************************************"
 
-    if 
+    if ($global:outputRemoveArray.count -gt 0)
+    {
+        write-host "The following changes removed the IP address:"
+
+        foreach ($entry in $global:outputRemoveArray)
+        {
+            $entry
+        }
+
+        foreach ($entry in $global:outputRemoveArray)
+        {
+            out-logfile -string $entry
+        }
+
+        $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+    }
 
 }
 

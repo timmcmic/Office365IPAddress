@@ -330,6 +330,7 @@ function test-IPChangeSpace
 
     $functionNetwork = $NULL
     $functionOriginalID = $null
+    $functionServiceAreaDisplayName = $NULL
 
     out-logfile -string "Entering test-IPSpace"
 
@@ -355,9 +356,13 @@ function test-IPChangeSpace
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
-                    if ($functionOriginalID -eq "")
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq "")
                     {
-                        $functionOriginalID = "Endpoint Set ID No Longer Active"
+                        $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
+                    }
+                    else
+                    {
+                        $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
                     }
 
                     $outputObject = new-Object psObject -property @{
@@ -366,7 +371,7 @@ function test-IPChangeSpace
                         Disposition = $entry.Disposition
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
-                        ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                        ServiceAreaDisplayName = $functionServiceAreaDisplayName
                         IPsAdded = $entry.add.ips
                         IPInSubnet = $ipEntry
                     }
@@ -406,6 +411,7 @@ function test-IPRemoveSpace
 
     $functionNetwork = $NULL
     $functionOriginalID = $null
+    $functionServiceAreaDisplayName = $NULL
 
     out-logfile -string "Entering test-IPSpace"
 
@@ -431,18 +437,21 @@ function test-IPRemoveSpace
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
-                    if ($functionOriginalID -eq "")
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq "")
                     {
-                        $functionOriginalID = "Endpoint Set ID No Longer Active"
+                        $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
                     }
-
+                    else
+                    {
+                        $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                    }
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID
                         Disposition = $entry.Disposition
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
-                        ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                        ServiceAreaDisplayName = $functionServiceAreaDisplayName
                         IPsRemove = $entry.remove.ips
                         IPInSubnet = $ipEntry
                     }

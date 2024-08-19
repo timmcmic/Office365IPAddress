@@ -364,7 +364,7 @@ function test-IPChangeSpace
 
                     out-logfile -string $outputObject
 
-                    $global:outputArray += $outputObject
+                    $global:outputChangeArray += $outputObject
                  }
                  else
                  {

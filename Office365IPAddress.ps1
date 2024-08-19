@@ -355,6 +355,11 @@ function test-IPChangeSpace
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
+                    if ($functionOriginalID -eq "")
+                    {
+                        $functionOriginalID = "Endpoint Set ID No Longer Active"
+                    }
+
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID
@@ -635,10 +640,15 @@ if ($global:outputArray.count -gt 0)
         out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
     }
 
+    write-host "IP entries present in the following Office 365 Services:"
+
     foreach ($entry in $global:outputArray)
     {
+
         $entry
     }
+
+    write
 
     foreach ($entry in $global:outputChangeArray)
     {

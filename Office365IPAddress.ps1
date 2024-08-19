@@ -652,7 +652,9 @@ if ($global:outputArray.count -gt 0)
 
     if ($global:outputArray.count -gt 0)
     {
+        out-logfile -string ""
         out-logfile -string "IPs was located in the following service description:"
+        out-logfile -string ""
 
         foreach ($entry in $global:outputArray)
         {
@@ -664,7 +666,9 @@ if ($global:outputArray.count -gt 0)
 
     if ($global:outputChangeArray.count -gt 0)
     {
+        out-logfile -string ""
         out-logfile -string "IP was located in the following version additions since 2018:"
+        out-logfile -string ""
 
         foreach ($entry in $global:outputChangeArray)
         {

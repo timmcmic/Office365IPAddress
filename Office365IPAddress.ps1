@@ -363,6 +363,7 @@ function test-IPChangeSpace
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID
+                        Disposition = $entry.Disposition
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
                         ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
@@ -438,6 +439,7 @@ function test-IPRemoveSpace
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID
+                        Disposition = $entry.Disposition
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
                         ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName

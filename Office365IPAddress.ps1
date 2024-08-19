@@ -650,19 +650,29 @@ if ($global:outputArray.count -gt 0)
     out-logfile -string "**"
     out-logfile -string "*"
 
-    foreach ($entry in $global:outputArray)
+    if ($global:outputArray.count -gt 0)
     {
-        out-logfile -string $entry
+        out-logfile -string "IPs was located in the following service description:"
+
+        foreach ($entry in $global:outputArray)
+        {
+            out-logfile -string $entry
+        }
+    
+        $global:outputArray | Export-Clixml -Path $outputXMLFile
     }
 
-    $global:outputArray | Export-Clixml -Path $outputXMLFile
-
-    foreach ($entry in $global:outputChangeArray)
+    if ($global:outputChangeArray.count -gt 0)
     {
-        out-logfile -string $entry
-    }
+        out-logfile -string "IP was located in the following version additions since 2018:"
 
-    $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
+        foreach ($entry in $global:outputChangeArray)
+        {
+            out-logfile -string $entry
+        }
+
+        $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
+    }  
 }
 else 
 {

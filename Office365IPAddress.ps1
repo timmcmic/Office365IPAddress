@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.4
+.VERSION 1.1.5
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -356,7 +356,7 @@ function test-IPChangeSpace
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
-                    if ($functionOriginalID.ServiceAreaDisplayName -eq "")
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq $NULL)
                     {
                         $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
                     }
@@ -437,7 +437,7 @@ function test-IPRemoveSpace
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
-                    if ($functionOriginalID.ServiceAreaDisplayName -eq "")
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq $null)
                     {
                         $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
                     }
@@ -445,6 +445,7 @@ function test-IPRemoveSpace
                     {
                         $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
                     }
+
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID

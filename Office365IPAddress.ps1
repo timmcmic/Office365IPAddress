@@ -329,10 +329,11 @@ function test-IPChangeSpace
     )
 
     $functionNetwork = $NULL
+    $functionOriginalID = $null
 
     out-logfile -string "Entering test-IPSpace"
 
-    foreach ($entry in $dataToTest)
+    foreach ($entry in $changeDataToTest)
     {
         Out-logfile -string ("Testing change entry id: "+$entry.id)
 
@@ -352,12 +353,14 @@ function test-IPChangeSpace
                  {
                     out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
+                    $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
+
                     $outputObject = new-Object psObject -property @{
                         M365Instance = $regionString
                         ChangeID = $entry.ID
                         EndpointSetID = $entry.endpointSetId
                         Version = $entry.Version
-                        ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
+                        ServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
                         IPsAdded = $entry.ips
                         IPInSubnet = $ipEntry
                     }

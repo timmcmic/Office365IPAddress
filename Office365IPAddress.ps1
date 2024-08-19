@@ -401,7 +401,7 @@ $allIPInformationChinaBaseURL = "https://endpoints.office.com/endpoints/China?Cl
 $allIPInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/endpoints/USGovGCCHigh?ClientRequestId="
 $allIPInformationUSGovDODBaseURL = "https://endpoints.office.com/endpoints/USGovDOD?ClientRequestId="
 
-$allIPChangeInformationWorldWideBaseURL = "https://endpoints.office.com/changes/wordwide/0000000000?clientrequestid="
+$allIPChangeInformationWorldWideBaseURL = "https://endpoints.office.com/changes/worldwide/0000000000?clientrequestid="
 $allIPChangeInformationChinaBaseURL = "https://endpoints.office.com/changes/china/0000000000?clientrequestid="
 $allIPChangeInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/changes/usgovgcchigh/0000000000?clientrequestid="
 $allIPChangeInformationUSGovDODBaseURL = "https://endpoints.office.com/changes/usgovdod/0000000000?clientrequestid="

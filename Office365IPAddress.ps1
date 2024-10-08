@@ -40,9 +40,9 @@
 #> 
 Param(
     [Parameter(Mandatory = $false)]
-    [string]$IPAddressToTest="",
+    [string]$IPAddressToTest="NONE",
     [Parameter(Mandatory = $false)]
-    [string]$URLToTest="",
+    [string]$URLToTest="NONE",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
     [Parameter(Mandatory = $false)]
@@ -585,12 +585,12 @@ function test-Parameters
         $URLToTest
     )
 
-    if (($URLToTest -eq "") -and ($IPAddressToTest -eq ""))
+    if (($URLToTest -eq "NONE") -and ($IPAddressToTest -eq "NONE"))
     {
         out-logfile -string "No URL or IP entries were specified.  To perform an analysis specify either an IP address or URL."
         out-logfile -string "ERROR: NO IP OR URL SPECIFIED" -isERROR:$TRUE
     }
-    elseif (($URLToTest -ne "") -and ($IPAddressToTest -ne ""))
+    elseif (($URLToTest -ne "NONE") -and ($IPAddressToTest -ne "NONE"))
     {
         out-logfile -string "Both a URL and IP address were specified to test.  Specify only a IP Address or URL to proceed - not both."
         out-logfile -string "ERROR: URL AND IP ADDRESS SPECIFIED" -isERROR:$TRUE
@@ -653,11 +653,12 @@ function get-logFileName
     $functionURL1 = "//"
     $functionURL2 = "/"
 
-
-    if (($ipAddressToTest -ne "") -and ($urlToTest -ne ""))
+    write-host ("Here")
+    
+    if (($ipAddressToTest -ne "NONE") -and ($urlToTest -ne "NONE"))
     {
         #Both an IP and URL were specified - use a generic log name.
-
+        write-host "Log File Name Generic - both URL and IP specified."
         $logFileName = "Office365IPAddress"
     }
     elseif ($ipAddressToTest -ne "")

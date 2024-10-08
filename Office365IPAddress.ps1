@@ -45,8 +45,8 @@ Param(
     [string]$URLToTest="",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
-    [Parameter(Mandatory = $true)]
-    [boolean]$allowQueryIPLocationInformationFromThirdParty
+    [Parameter(Mandatory = $false)]
+    [boolean]$allowQueryIPLocationInformationFromThirdParty=$TRUE
 )
 
 Function new-LogFile

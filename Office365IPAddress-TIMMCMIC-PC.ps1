@@ -40,11 +40,13 @@
 #> 
 Param(
     [Parameter(Mandatory = $false)]
-    [string]$IPAddressToTest="",
+    [string]$IPAddressToTest="NONE",
+    [Parameter(Mandatory = $false)]
+    [string]$URLToTest="NONE",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
-    [Parameter(Mandatory = $true)]
-    [boolean]$allowQueryIPLocationInformationFromThirdParty
+    [Parameter(Mandatory = $false)]
+    [boolean]$allowQueryIPLocationInformationFromThirdParty=$TRUE
 )
 
 Function new-LogFile
@@ -58,6 +60,8 @@ Function new-LogFile
         [Parameter(Mandatory = $true)]
         [string]$logFolderPath
     )
+
+    $ErrorActionPreference = 'Stop'
 
     [string]$logFileSuffix=".log"
     [string]$fileName=$logFileName+$logFileSuffix
@@ -314,6 +318,73 @@ function test-IPSpace
     out-logfile -string "Exiting test-IPSpace"
 }
 
+function test-URLSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $IPAddress,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionNetwork = $NULL
+
+    out-logfile -string "Entering test-IPSpace"
+
+    foreach ($entry in $dataToTest)
+    {
+        Out-logfile -string ("Testing entry id: "+$entry.id)
+
+        if ($entry.ips.count -gt 0)
+        {
+            out-logfile -string "IP count > 0"
+
+            foreach ($ipEntry in $entry.ips)
+            {
+                out-logfile -string ("Testing entry IP: "+$ipEntry)
+
+                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+
+                 out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                 if ($functionNetwork.Contains($IPAddress))
+                 {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $outputObject = new-Object psObject -property @{
+                        M365Instance = $regionString
+                        ID = $entry.ID
+                        ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
+                        URLs = $entry.URLs
+                        IPs = $entry.ips
+                        IPInSubnet = $ipEntry
+                        TCPPorts = $entry.tcpports
+                        ExpressRoute = $entry.expressRoute
+                        Required = $entry.required
+                    }
+
+                    out-logfile -string $outputObject
+
+                    $global:outputArray += $outputObject
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
 function test-IPChangeSpace
 {
     Param
@@ -504,54 +575,219 @@ function get-IPLocationInformation
     return $functionData
 }
 
-Function Test-PowershellVersion
-     {
-        [cmdletbinding()]
+#Following function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv4-address.md
+function IsIPv4AddressValid { param([string]$IP)
+	$RegEx = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+	if ($IP -match $RegEx) {
+		return $true
+	} else {
+		return $false
+	}
+}
 
-        $functionPowerShellVersion = $NULL
+#Follwoing function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv6-address.md
 
-        out-logfile -string "Entering Test-PowerShellVersion"
-
-        #Write function parameter information and variables to a log file.
-
-        $functionPowerShellVersion = $PSVersionTable.PSVersion
-
-        out-logfile -string "Determining powershell version."
-        out-logfile -string ("Major: "+$functionPowerShellVersion.major)
-        out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
-        out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
-        out-logfile -string $functionPowerShellVersion
-
-        if ($functionPowerShellVersion.Major -lt 7)
-        {
-            out-logfile -string "Powershell 7 and higher is required to run this script."
-            out-logfile -string "Please run module from Powershell 7.x"
-            out-logfile -string "" -isError:$true
-        }
-        else
-        {
-            out-logfile -string "Powershell version is not powershell 5.X proceed."
-        }
-
-        out-logfile -string "Exiting Test-PowerShellVersion"
-
+function IsIPv6AddressValid { param([string]$IP)
+    $IPv4Regex = '(((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))'
+    $G = '[a-f\d]{1,4}'
+    $Tail = @(":",
+    "(:($G)?|$IPv4Regex)",
+    ":($IPv4Regex|$G(:$G)?|)",
+    "(:$IPv4Regex|:$G(:$IPv4Regex|(:$G){0,2})|:)",
+    "((:$G){0,2}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,3}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,4}(:$IPv4Regex|(:$G){1,2})|:)")
+    [string] $IPv6RegexString = $G
+    $Tail | foreach { $IPv6RegexString = "${G}:($IPv6RegexString|$_)" }
+    $IPv6RegexString = ":(:$G){0,5}((:$G){1,2}|:$IPv4Regex)|$IPv6RegexString"
+    $IPv6RegexString = $IPv6RegexString -replace '\(' , '(?:' # make all groups non-capturing
+    [regex] $IPv6Regex = $IPv6RegexString
+    if ($IP -imatch "^$IPv6Regex$") {
+    	return $true
+    } else {
+    	return $false
     }
+}
+function test-Parameters
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $ipAddressToTest,
+        [Parameter(Mandatory = $true)]
+        $URLToTest
+    )
+
+    $functionIPV4 ="."
+    $functionIPV6 = ":"
+
+    if (($URLToTest -eq "NONE") -and ($IPAddressToTest -eq "NONE"))
+    {
+        out-logfile -string "No URL or IP entries were specified.  To perform an analysis specify either an IP address or URL."
+        out-logfile -string "ERROR: NO IP OR URL SPECIFIED" -isERROR:$TRUE
+    }
+    elseif (($URLToTest -ne "NONE") -and ($IPAddressToTest -ne "NONE"))
+    {
+        out-logfile -string "Both a URL and IP address were specified to test.  Specify only a IP Address or URL to proceed - not both."
+        out-logfile -string "ERROR: URL AND IP ADDRESS SPECIFIED" -isERROR:$TRUE
+    }
+    elseif ($URLToTest -ne "NONE")
+    {
+        out-logfile -string "URL specified to test - proceed."
+    }
+    elseif ($IPAddressToTest -ne "NONE")
+    {
+        out-logfile -string "IP specified to test - proceed."
+
+        if ($ipAddressToTest.contains($functionIPV4))
+        {
+            if (IsIPv4AddressValid -ip $ipAddressToTest)
+            {
+                out-logfile -string "IPv4 address in proper format."
+            }
+            else 
+            {
+                out-logfile -string "IPv4 address is not in proper format."
+            }
+        }
+        elseif ($ipAddressToTest.contains($functionIPV6))
+        {
+            if (IsIPv6AddressValid -ip $ipAddressToTest)
+            {
+                out-logfile -string "IPv6 address in proper format."
+            }
+            else 
+            {
+                out-logfile -string "IPv6 address is not in proper format."
+            }
+        }
+    }
+}
+
+Function Test-PowershellVersion
+{
+    [cmdletbinding()]
+
+    $functionPowerShellVersion = $NULL
+
+    out-logfile -string "Entering Test-PowerShellVersion"
+
+    #Write function parameter information and variables to a log file.
+
+    $functionPowerShellVersion = $PSVersionTable.PSVersion
+
+    out-logfile -string "Determining powershell version."
+    out-logfile -string ("Major: "+$functionPowerShellVersion.major)
+    out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
+    out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
+    out-logfile -string $functionPowerShellVersion
+
+    if ($functionPowerShellVersion.Major -lt 7)
+    {
+        out-logfile -string "Powershell 7 and higher is required to run this script."
+        out-logfile -string "Please run module from Powershell 7.x"
+        out-logfile -string "" -isError:$true
+    }
+    else
+    {
+        out-logfile -string "Powershell version is not powershell 5.X proceed."
+    }
+
+    out-logfile -string "Exiting Test-PowerShellVersion"
+
+}
+
+function get-logFileName
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $ipAddressToTest,
+        [Parameter(Mandatory = $true)]
+        $URLToTest
+    )
+
+    [string]$logFileName = ""
+    $functionURL = ""
+    $functionURL1 = "//"
+    $functionURL2 = "/"
+
+    write-host ("IPAddressToTest: "+$ipAddressToTest)
+    write-host ("URLToTest: "+$URLToTest)
+    
+    if (($ipAddressToTest -eq "NONE") -and ($urlToTest -eq "NONE"))
+    {
+        #Neither an IP address or URL was specified - used generic name.
+        write-host "Log File Name Generic - neither URL or IP specified."
+        $logFileName = "Office365IPAddress"
+        write-host $logFileName
+    }
+    elseif ((($ipAddressToTest -ne "NONE") -and ($urlToTest -ne "NONE"))) 
+    {
+        #Both an IP and URL were specified - use a generic log name.
+        write-host "Log File Name Generic - both URL or IP specified."
+        $logFileName = "Office365IPAddress"
+        write-host $logFileName
+    }
+    elseif ($ipAddressToTest -ne "")
+    {
+        write-host "Only IP address specified - use IP as log file name."
+        if ($IPAddressToTest.contains("."))
+        {
+            $logFileName = $IPAddressToTest.replace(".","-")
+            write-host $logFileName
+        }
+        else 
+        {
+            $logFileName = $IPAddressToTest.replace(":","-")
+            write-host $logFileName
+        }
+    }
+    elseif ($urlToTest -ne "")
+    {
+        write-host "Only URL was specified - use URL as name."
+        #Test the string to see if it was specified in the format of a URL.
+
+        if ($urlToTest.contains($functionURL1))
+        {
+            $functionURL = $urlToTest.split($functionURL1)
+
+            foreach ($url in $functionURL)
+            {
+                write-host $url
+            }
+
+            if ($functionURL.contains("$functionURL2"))
+            {
+                $functionURL = $urlToTest.split($functionURL2)
+
+                foreach ($url in $functionURL)
+                {
+                    write-host $url
+                }
+            }
+
+            $functionURL = $functionURL[1]
+            write-host $functionURL
+        }
+        else 
+        {
+            $functionURL = $URLToTest
+            write-host $functionURL
+        }
+
+        $logfilename = $functionurl.replace(".","-")
+        write-host $logFileName
+    }
+
+    return $logFileName
+}
 
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
 
 #Define function variables.
-
-if ($IPAddressToTest.contains("."))
-{
-    $logFileName = $IPAddressToTest.replace(".","-")
-}
-else 
-{
-    $logFileName = $IPAddressToTest.replace(":","-")
-}
-
 
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
@@ -602,6 +838,13 @@ $global:outputRemoveArray=@()
 
 #Create the log file.
 
+try {
+    $logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
+}
+catch {
+    write-error "Error calculating log file name."
+}
+
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
@@ -618,7 +861,13 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
+out-logfile -string "Invoking powershell version test..."
+
 Test-PowerShellVersion
+
+out-logfile -string "Invoking parameter test..."
+
+Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest
 
 out-logfile -string "Obtaining client guid for web requests."
 
@@ -691,6 +940,8 @@ $allIPChangeInformationWorldWide = get-jsonData -data $allIPChangeInformationWor
 $allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
 $allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
 $allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
+
+
 
 out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 

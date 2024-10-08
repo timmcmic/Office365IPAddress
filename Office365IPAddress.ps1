@@ -575,6 +575,39 @@ function get-IPLocationInformation
     return $functionData
 }
 
+#Following function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv4-address.md
+function IsIPv4AddressValid { param([string]$IP)
+	$RegEx = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+	if ($IP -match $RegEx) {
+		return $true
+	} else {
+		return $false
+	}
+}
+
+#Follwoing function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv6-address.md
+
+function IsIPv6AddressValid { param([string]$IP)
+    $IPv4Regex = '(((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))'
+    $G = '[a-f\d]{1,4}'
+    $Tail = @(":",
+    "(:($G)?|$IPv4Regex)",
+    ":($IPv4Regex|$G(:$G)?|)",
+    "(:$IPv4Regex|:$G(:$IPv4Regex|(:$G){0,2})|:)",
+    "((:$G){0,2}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,3}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,4}(:$IPv4Regex|(:$G){1,2})|:)")
+    [string] $IPv6RegexString = $G
+    $Tail | foreach { $IPv6RegexString = "${G}:($IPv6RegexString|$_)" }
+    $IPv6RegexString = ":(:$G){0,5}((:$G){1,2}|:$IPv4Regex)|$IPv6RegexString"
+    $IPv6RegexString = $IPv6RegexString -replace '\(' , '(?:' # make all groups non-capturing
+    [regex] $IPv6Regex = $IPv6RegexString
+    if ($IP -imatch "^$IPv6Regex$") {
+    	return $true
+    } else {
+    	return $false
+    }
+}
 function test-Parameters
 {
     Param
@@ -584,6 +617,9 @@ function test-Parameters
         [Parameter(Mandatory = $true)]
         $URLToTest
     )
+
+    $functionIPV4 ="."
+    $functionIPV6 = ":"
 
     if (($URLToTest -eq "NONE") -and ($IPAddressToTest -eq "NONE"))
     {
@@ -595,13 +631,36 @@ function test-Parameters
         out-logfile -string "Both a URL and IP address were specified to test.  Specify only a IP Address or URL to proceed - not both."
         out-logfile -string "ERROR: URL AND IP ADDRESS SPECIFIED" -isERROR:$TRUE
     }
-    elseif ($URLToTest -ne "")
+    elseif ($URLToTest -ne "NONE")
     {
         out-logfile -string "URL specified to test - proceed."
     }
-    elseif ($IPAddressToTest -ne "")
+    elseif ($IPAddressToTest -ne "NONE")
     {
         out-logfile -string "IP specified to test - proceed."
+
+        if ($ipAddressToTest.contains($functionIPV4))
+        {
+            if (IsIPv4AddressValid -ip $ipAddressToTest)
+            {
+                out-logfile -string "IPv4 address in proper format."
+            }
+            else 
+            {
+                out-logfile -string "IPv4 address is not in proper format."
+            }
+        }
+        elseif ($ipAddressToTest.contains($functionIPV6))
+        {
+            if (IsIPv6AddressValid -ip $ipAddressToTest)
+            {
+                out-logfile -string "IPv6 address in proper format."
+            }
+            else 
+            {
+                out-logfile -string "IPv6 address is not in proper format."
+            }
+        }
     }
 }
 
@@ -802,7 +861,11 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
+out-logfile -string "Invoking powershell version test..."
+
 Test-PowerShellVersion
+
+out-logfile -string "Invoking parameter test..."
 
 Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest
 

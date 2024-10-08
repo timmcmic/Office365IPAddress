@@ -653,7 +653,8 @@ function get-logFileName
     $functionURL1 = "//"
     $functionURL2 = "/"
 
-    write-host ("Here")
+    write-host ("IPAddressToTest: "+$ipAddressToTest)
+    write-host ("URLToTest: "+$URLToTest)
     
     if (($ipAddressToTest -ne "NONE") -and ($urlToTest -ne "NONE"))
     {

@@ -580,7 +580,7 @@ function test-Parameters
     Param
     (
         [Parameter(Mandatory = $true)]
-        $ipAddresToTest,
+        $ipAddressToTest,
         [Parameter(Mandatory = $true)]
         $URLToTest
     )
@@ -754,7 +754,12 @@ $global:outputRemoveArray=@()
 
 #Create the log file.
 
-$logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
+try {
+    $logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest -errorAction Stop
+}
+catch {
+    write-error "Error calculating log file name."
+}
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
@@ -772,9 +777,21 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
-Test-PowerShellVersion
+try {
+    Test-PowerShellVersion -errorAction STOP
+}
+catch {
+    out-logfile -string "Unable to test powershell version."
+    out-logfile -string $_ -isError:$true
+}
 
-Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest
+try {
+    Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest -ErrorAction STOP
+}
+catch {
+    out-logfile -string "Unable to test paramters."
+    out-logfile -string $_ -isError:$TRUE
+}
 
 out-logfile -string "Obtaining client guid for web requests."
 

@@ -755,7 +755,7 @@ $global:outputRemoveArray=@()
 #Create the log file.
 
 try {
-    $logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest -errorAction Stop
+    $logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
 }
 catch {
     write-error "Error calculating log file name."
@@ -777,21 +777,9 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
-try {
-    Test-PowerShellVersion -errorAction STOP
-}
-catch {
-    out-logfile -string "Unable to test powershell version."
-    out-logfile -string $_ -isError:$true
-}
+Test-PowerShellVersion
 
-try {
-    Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest -ErrorAction STOP
-}
-catch {
-    out-logfile -string "Unable to test paramters."
-    out-logfile -string $_ -isError:$TRUE
-}
+Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest
 
 out-logfile -string "Obtaining client guid for web requests."
 

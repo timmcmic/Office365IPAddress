@@ -61,6 +61,8 @@ Function new-LogFile
         [string]$logFolderPath
     )
 
+    $ErrorActionPreference = 'Stop'
+
     [string]$logFileSuffix=".log"
     [string]$fileName=$logFileName+$logFileSuffix
 
@@ -770,7 +772,7 @@ out-logfile -string "***********************************************************
 
 Test-PowerShellVersion
 
-Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlTest
+Test-Parameters -ipAddressToTest $ipAddressToTest -urlToTest $urlToTest
 
 out-logfile -string "Obtaining client guid for web requests."
 

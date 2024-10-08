@@ -656,44 +656,69 @@ function get-logFileName
     write-host ("IPAddressToTest: "+$ipAddressToTest)
     write-host ("URLToTest: "+$URLToTest)
     
-    if (($ipAddressToTest -ne "NONE") -and ($urlToTest -ne "NONE"))
+    if (($ipAddressToTest -eq "NONE") -and ($urlToTest -eq "NONE"))
+    {
+        #Neither an IP address or URL was specified - used generic name.
+        write-host "Log File Name Generic - neither URL or IP specified."
+        $logFileName = "Office365IPAddress"
+        write-host $logFileName
+    }
+    elseif ((($ipAddressToTest -ne "NONE") -and ($urlToTest -ne "NONE"))) 
     {
         #Both an IP and URL were specified - use a generic log name.
-        write-host "Log File Name Generic - both URL and IP specified."
+        write-host "Log File Name Generic - both URL or IP specified."
         $logFileName = "Office365IPAddress"
+        write-host $logFileName
     }
     elseif ($ipAddressToTest -ne "")
     {
+        write-host "Only IP address specified - use IP as log file name."
         if ($IPAddressToTest.contains("."))
         {
             $logFileName = $IPAddressToTest.replace(".","-")
+            write-host $logFileName
         }
         else 
         {
             $logFileName = $IPAddressToTest.replace(":","-")
+            write-host $logFileName
         }
     }
     elseif ($urlToTest -ne "")
     {
+        write-host "Only URL was specified - use URL as name."
         #Test the string to see if it was specified in the format of a URL.
 
         if ($urlToTest.contains($functionURL1))
         {
             $functionURL = $urlToTest.split($functionURL1)
 
+            foreach ($url in $functionURL)
+            {
+                write-host $url
+            }
+
             if ($functionURL.contains("$functionURL2"))
             {
                 $functionURL = $urlToTest.split($functionURL2)
+
+                foreach ($url in $functionURL)
+                {
+                    write-host $url
+                }
             }
 
             $functionURL = $functionURL[1]
+            write-host $functionURL
         }
         else 
         {
             $functionURL = $URLToTest
+            write-host $functionURL
         }
 
         $logfilename = $functionurl.replace(".","-")
+        write-host $logFileName
     }
 
     return $logFileName

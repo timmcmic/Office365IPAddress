@@ -604,37 +604,96 @@ function test-Parameters
 }
 
 Function Test-PowershellVersion
-     {
-        [cmdletbinding()]
+{
+    [cmdletbinding()]
 
-        $functionPowerShellVersion = $NULL
+    $functionPowerShellVersion = $NULL
 
-        out-logfile -string "Entering Test-PowerShellVersion"
+    out-logfile -string "Entering Test-PowerShellVersion"
 
-        #Write function parameter information and variables to a log file.
+    #Write function parameter information and variables to a log file.
 
-        $functionPowerShellVersion = $PSVersionTable.PSVersion
+    $functionPowerShellVersion = $PSVersionTable.PSVersion
 
-        out-logfile -string "Determining powershell version."
-        out-logfile -string ("Major: "+$functionPowerShellVersion.major)
-        out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
-        out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
-        out-logfile -string $functionPowerShellVersion
+    out-logfile -string "Determining powershell version."
+    out-logfile -string ("Major: "+$functionPowerShellVersion.major)
+    out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
+    out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
+    out-logfile -string $functionPowerShellVersion
 
-        if ($functionPowerShellVersion.Major -lt 7)
-        {
-            out-logfile -string "Powershell 7 and higher is required to run this script."
-            out-logfile -string "Please run module from Powershell 7.x"
-            out-logfile -string "" -isError:$true
-        }
-        else
-        {
-            out-logfile -string "Powershell version is not powershell 5.X proceed."
-        }
-
-        out-logfile -string "Exiting Test-PowerShellVersion"
-
+    if ($functionPowerShellVersion.Major -lt 7)
+    {
+        out-logfile -string "Powershell 7 and higher is required to run this script."
+        out-logfile -string "Please run module from Powershell 7.x"
+        out-logfile -string "" -isError:$true
     }
+    else
+    {
+        out-logfile -string "Powershell version is not powershell 5.X proceed."
+    }
+
+    out-logfile -string "Exiting Test-PowerShellVersion"
+
+}
+
+function get-logFileName
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $ipAddresToTest,
+        [Parameter(Mandatory = $true)]
+        $URLToTest
+    )
+
+    [string]$logFileName = ""
+    $functionURL = ""
+    $functionURL1 = "//"
+    $functionURL2 = "/"
+
+
+    if (($ipAddressToTest -ne "") -and ($urlToTest -ne ""))
+    {
+        #Both an IP and URL were specified - use a generic log name.
+
+        $logFileName = "Office365IPAddress"
+    }
+    elseif ($ipAddressToTest -ne "")
+    {
+        if ($IPAddressToTest.contains("."))
+        {
+            $logFileName = $IPAddressToTest.replace(".","-")
+        }
+        else 
+        {
+            $logFileName = $IPAddressToTest.replace(":","-")
+        }
+    }
+    elseif ($urlToTest -ne "")
+    {
+        #Test the string to see if it was specified in the format of a URL.
+
+        if ($urlToTest.contains($functionURL1))
+        {
+            $functionURL = $urlToTest.split($functionURL1)
+
+            if ($functionURL.contains("$functionURL2"))
+            {
+                $functionURL = $urlToTest.split($functionURL2)
+            }
+
+            $functionURL = $functionURL[1]
+        }
+        else 
+        {
+            $functionURL = $URLToTest
+        }
+
+        $logfilename = $functionurl.replace(".","-")
+    }
+
+    return $logFileName
+}
 
 #=====================================================================================
 #Begin main function body.
@@ -642,15 +701,7 @@ Function Test-PowershellVersion
 
 #Define function variables.
 
-if ($IPAddressToTest.contains("."))
-{
-    $logFileName = $IPAddressToTest.replace(".","-")
-}
-else 
-{
-    $logFileName = $IPAddressToTest.replace(":","-")
-}
-
+$logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
 
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="

@@ -643,7 +643,7 @@ function get-logFileName
     Param
     (
         [Parameter(Mandatory = $true)]
-        $ipAddresToTest,
+        $ipAddressToTest,
         [Parameter(Mandatory = $true)]
         $URLToTest
     )

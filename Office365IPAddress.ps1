@@ -41,6 +41,8 @@
 Param(
     [Parameter(Mandatory = $false)]
     [string]$IPAddressToTest="",
+    [Parameter(Mandatory = $false)]
+    [string]$URLToTest="",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
     [Parameter(Mandatory = $true)]
@@ -691,6 +693,8 @@ $allIPChangeInformationWorldWide = get-jsonData -data $allIPChangeInformationWor
 $allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
 $allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
 $allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
+
+
 
 out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 

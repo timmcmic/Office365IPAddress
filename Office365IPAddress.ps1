@@ -703,8 +703,6 @@ function get-logFileName
 
 #Define function variables.
 
-$logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
-
 $clientGuid = $NULL
 $allVersionInfoBaseURL = "https://endpoints.office.com/version?ClientRequestId="
 $allVersionInfoURL = $NULL
@@ -753,6 +751,8 @@ $global:outputChangeArray=@()
 $global:outputRemoveArray=@()
 
 #Create the log file.
+
+$logfileName = get-logFileName -ipAddressToTest $ipAddressToTest -urlToTest $URLToTest
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 

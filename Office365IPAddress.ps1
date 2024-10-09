@@ -47,6 +47,41 @@ Param(
     [boolean]$allowQueryIPLocationInformationFromThirdParty
 )
 
+#Following function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv4-address.md
+function IsIPv4AddressValid { param([string]$IP)
+	$RegEx = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+	if ($IP -match $RegEx) {
+		return $true
+	} else {
+		return $false
+	}
+}
+
+#Follwoing function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv6-address.md
+
+function IsIPv6AddressValid { param([string]$IP)
+    $IPv4Regex = '(((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))'
+    $G = '[a-f\d]{1,4}'
+    $Tail = @(":",
+    "(:($G)?|$IPv4Regex)",
+    ":($IPv4Regex|$G(:$G)?|)",
+    "(:$IPv4Regex|:$G(:$IPv4Regex|(:$G){0,2})|:)",
+    "((:$G){0,2}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,3}(:$IPv4Regex|(:$G){1,2})|:)",
+    "((:$G){0,4}(:$IPv4Regex|(:$G){1,2})|:)")
+    [string] $IPv6RegexString = $G
+    $Tail | foreach { $IPv6RegexString = "${G}:($IPv6RegexString|$_)" }
+    $IPv6RegexString = ":(:$G){0,5}((:$G){1,2}|:$IPv4Regex)|$IPv6RegexString"
+    $IPv6RegexString = $IPv6RegexString -replace '\(' , '(?:' # make all groups non-capturing
+    [regex] $IPv6Regex = $IPv6RegexString
+    if ($IP -imatch "^$IPv6Regex$") {
+    	return $true
+    } else {
+    	return $false
+    }
+}
+
+
 Function new-LogFile
 {
     [cmdletbinding()]
@@ -546,10 +581,28 @@ Function Test-PowershellVersion
 if ($IPAddressToTest.contains("."))
 {
     $logFileName = $IPAddressToTest.replace(".","-")
+
+    if (IsIPv4AddressValid -ip $ipAddressToTest)
+    {
+        out-logfile -string "Address specified is a valid IPV4 addrss."
+    }
+    else 
+    {
+        out-logfile -string "IPv4 address specified but is in improper format." -isError:$true
+    } 
 }
 else 
 {
     $logFileName = $IPAddressToTest.replace(":","-")
+
+    if (IsIPv6AddressValid -ip $ipAddressToTest)
+    {
+        out-logfile -string "Address specified is a valid IPV4 addrss."
+    }
+    else 
+    {
+        out-logfile -string "IPv4 address specified but is in improper format." -isError:$true
+    } 
 }
 
 

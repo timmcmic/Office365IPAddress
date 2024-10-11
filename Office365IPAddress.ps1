@@ -40,12 +40,16 @@
 #> 
 Param(
     [Parameter(Mandatory = $false)]
-    [string]$IPAddressToTest="",
+    [string]$IPAddressToTest="0.0.0.0",
+    [Parameter(Mandatory = $false)]
+    [string]$URLToTest="nodomain.local",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
-    [Parameter(Mandatory = $true)]
-    [boolean]$allowQueryIPLocationInformationFromThirdParty
+    [Parameter(Mandatory = $false)]
+    [boolean]$allowQueryIPLocationInformationFromThirdParty=$TRUE
 )
+
+$ErrorActionPreference = 'Stop'
 
 #Following function credit to author -> https://github.com/fleschutz/PowerShell/blob/main/docs/check-ipv4-address.md
 function IsIPv4AddressValid { param([string]$IP)
@@ -79,6 +83,134 @@ function IsIPv6AddressValid { param([string]$IP)
     } else {
     	return $false
     }
+}
+
+function create-OutputObject
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $M365Instance,
+        [Parameter(Mandatory = $true)]
+        $id,
+        [Parameter(Mandatory = $true)]
+        $ServiceArea,
+        [Parameter(Mandatory = $true)]
+        $ServiceAreaDisplayName,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $URLs,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $IPs,
+        [Parameter(Mandatory = $true)]
+        $IPInSubnetorURL,
+        [Parameter(Mandatory = $true)]
+        $TCPPorts,
+        [Parameter(Mandatory = $true)]
+        $ExpressRoute,
+        [Parameter(Mandatory = $true)]
+        $Required
+    )
+    
+    $outputObject = new-Object psObject -property $([ordered]@{
+        M365Instance = $M365Instance
+        ID = $ID
+        ServiceArea = $ServiceArea
+        ServiceAreaDisplayName = $ServiceAreaDisplayName
+        URLs = $URLs
+        IPs = $ips
+        IPInSubnetorURL = $IPInSubnetorURL
+        TCPPorts = $tcpports
+        ExpressRoute = $expressRoute
+        Required = $required
+    })
+
+    return $outputObject
+}
+
+function create-OutputChangebject
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $M365Instance,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $ChangeID,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Disposition,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $EndpointSetID,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Version,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $ServiceAreaDisplayName,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $IPsAddredorRemoved,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $URLsAddedOrRemoved,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $IPInSubnetOrURL,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $PreviousCategory,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $PreviousExpressRoute,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $PreviousServiceArea,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $PreviousRequire,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $PreviousTCPPort
+    )
+    
+    $outputObject = new-Object psObject -property $([ordered]@{
+        M365Instance = $M365Instance
+        ChangeID = $ChangeID
+        Disposition = $Disposition
+        EndpointSetID = $EndpointSetID
+        Version = $Version
+        ServiceAreaDisplayName = $ServiceAreaDisplayName
+        IPsAddedorRemoved = $IPsAddredorRemoved
+        URLsAddedOrRemoved = $URLsAddedOrRemoved
+        IPInSubnetorURL = $IPInSubnetOrURL
+        PreviousCategory = $PreviousCategory
+        PreviousExpressRoute = $PreviousExpressRoute
+        PreviousServiceArea = $PreviousServiceArea
+        PreviousRequire = $PreviousRequire
+        PreviousTCPPorts = $PreviousTCPPort
+    })
+
+    return $outputObject
 }
 
 
@@ -310,7 +442,7 @@ function test-IPSpace
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
 
-                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+                 $functionNetwork = get-IPEntry -ipEntry $ipEntry
 
                  out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
 
@@ -318,18 +450,8 @@ function test-IPSpace
                  {
                     out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                    $outputObject = new-Object psObject -property @{
-                        M365Instance = $regionString
-                        ID = $entry.ID
-                        ServiceAreaDisplayName = $entry.ServiceAreaDisplayName
-                        URLs = $entry.URLs
-                        IPs = $entry.ips
-                        IPInSubnet = $ipEntry
-                        TCPPorts = $entry.tcpports
-                        ExpressRoute = $entry.expressRoute
-                        Required = $entry.required
-                    }
-
+                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -expressRoute $entry.expressRoute -required $entry.required
+                        
                     out-logfile -string $outputObject
 
                     $global:outputArray += $outputObject
@@ -347,6 +469,210 @@ function test-IPSpace
     }
 
     out-logfile -string "Exiting test-IPSpace"
+}
+
+function get-IPEntry
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $ipEntry
+    )
+
+    $functionIPEntry = [System.Net.IpNetwork]::Parse($ipEntry)
+    
+    return $functionIPEntry
+}
+
+function calculate-WildCardURL
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $urlEntry,
+        [Parameter(Mandatory = $true)]
+        $urlToTest
+    )
+
+    $functionPeriod = "."
+    $functionWildCard = "*"
+    $functionSplitURLToTest = @()
+    $functionSplitURLEntry =@()
+    $functionSplit = @()
+    $functionSplitURLEntryCount = 0
+    $functionSplitURLToTestCount = 0
+    
+    out-logfile -string "The URL entry contains a wild card - rebuild the URL to test."
+
+    out-logfile -string "URL to test split by period..."
+
+    $functionSplitURLToTest = $urlToTest.split($functionPeriod)
+
+    foreach ($member in $functionSplitURLToTest)
+    {
+        out-logfile -string $member
+    }
+
+    out-logfile -string "URL Entry split by period..."
+
+    $functionSplitURLEntry = $urlEntry.split($functionPeriod)
+
+    foreach ($member in $functionSplitURLEntry)
+    {
+        out-logfile -string $member
+    }
+
+    out-logfile -string "URL to test reverse split by period..."
+
+    $functionSplitURLToTestReverse = $functionSplitURLToTest[-1..-($functionSplitURLToTest.Length)]
+    
+    foreach ($member in $functionSplitURLToTestReverse)
+    {
+        out-logfile -string $member
+    }
+
+    out-logfile -string "URL Entry reverse split by period..."
+
+    $functionSplitURLEntryReverse = $functionSplitURLEntry[-1..-($functionSplitURLEntry.Length)]
+
+    foreach ($member in $functionSplitURLEntryReverse)
+    {
+        out-logfile -string $member
+    }
+
+    $functionSplitURLEntryCount = $functionSplitURLEntryReverse.count
+    out-logfile -string $functionSplitURLEntryCount.tostring()
+    $functionSplitURLToTestCount = $functionSplitURLToTestReverse.count
+    out-logfile -string $functionSplitURLToTestCount.tostring()
+
+    if ($functionSplitURLToTestCount -gt $functionSplitURLEntryCount)
+    {
+        out-logfile -string "The URL to test is > the URL entry."
+
+        for ($i = 0 ; $i -lt $functionSplitURLToTestReverse.count ; $i++)
+        {
+            if ($functionSplitURLEntryReverse[$i] -eq $functionWildCard)
+            {
+                out-logfile -string "Wild card character found - injecting and existing loop."
+                $functionSplit += $functionWildCard
+                $i = $functionSplitURLToTestReverse.count+1
+            }
+            else 
+            {
+                $functionSplit += $functionSplitURLToTestReverse[$i]
+            }
+        }
+    }
+    elseif ($functionSplitURLToTestCount -le $functionSplitURLEntryCount)
+    {
+        out-logfile -string "The URL to test is > the URL entry."
+
+        for ($i = 0 ; $i -lt $functionSplitURLToTestReverse.count ; $i++)
+        {
+            if ($functionSplitURLEntryReverse[$i] -eq $functionWildCard)
+            {
+                out-logfile -string "Wild card character found - injecting and existing loop."
+                $functionSplit += $functionWildCard
+            }
+            else 
+            {
+                $functionSplit += $functionSplitURLToTestReverse[$i]
+            }
+        }
+    }
+
+    foreach ($member in $functionSplit)
+    {
+        out-logfile -string $member
+    }
+
+    $functionSplitReverse = $functionSplit[-1..-($functionSplit.Length)]
+
+    foreach ($member in $functionSplitReverse)
+    {
+        out-logfile -string $member
+    }
+
+    $functionTestURL=$functionSplitReverse[0]
+
+    for ($i=1;$i -lt $functionSplitReverse.count ; $i++)
+    {
+        $functionTestURL = $functionTestURL + $functionPeriod
+        $functionTestURL = $functionTestURL + $functionSplitReverse[$i]
+    }
+
+    out-logfile -string $functionTestURL
+
+    return $functionTestURL
+}
+
+function test-URLSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $URLToTest,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionWildCard = "*"
+    $functionPeriod = "."
+    $functionSplitURLToTest = @()
+
+    out-logfile -string "Entering test-URLSpace"
+
+    foreach ($entry in $dataToTest)
+    {
+        Out-logfile -string ("Testing entry id: "+$entry.id)
+
+        if ($entry.urls.count -gt 0)
+        {
+            out-logfile -string "URL count > 0"
+
+            foreach ($urlEntry in $entry.URLs)
+            {
+                #If the URL entry is a wild card - rebuid the URL to test to contain the wild card.
+
+                out-logfile -string "Determine if the url entry is a wild card URL."
+
+                if ($urlEntry.contains($functionWildCard))
+                {
+                    $functionTestURL = calculate-WildCardURL -urlEntry $urlEntry -urlToTest $URLToTest
+                    out-logfile -string $functionTestURL
+                }
+                else
+                {
+                    $functionTestURL = $URLToTest
+                    out-logfile -string "The URL entry does not contain a wild card - use the URLToTest value."
+                }
+
+                if ($urlEntry -eq $functionTestURL)
+                {
+                    out-logfile -string "The url to test is contained within the entry.  Log the service."
+
+                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -expressRoute $entry.expressRoute -required $entry.required
+
+                    out-logfile -string $outputObject
+
+                    $global:outputArray += $outputObject
+                }
+                else
+                {
+                out-logfile -string "The url to test is not contained within the entry - move on."
+                }
+            }
+        }
+        else 
+        {
+            out-logfile -string "url count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-urlSpace"
 }
 
 function test-IPChangeSpace
@@ -381,7 +707,7 @@ function test-IPChangeSpace
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
 
-                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
+                 $functionNetwork = get-IPEntry -ipEntry $ipEntry
 
                  out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
 
@@ -400,16 +726,91 @@ function test-IPChangeSpace
                         $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
                     }
 
-                    $outputObject = new-Object psObject -property @{
-                        M365Instance = $regionString
-                        ChangeID = $entry.ID
-                        Disposition = $entry.Disposition
-                        EndpointSetID = $entry.endpointSetId
-                        Version = $entry.Version
-                        ServiceAreaDisplayName = $functionServiceAreaDisplayName
-                        IPsAdded = $entry.add.ips
-                        IPInSubnet = $ipEntry
+                    $outputObject = create-OutputChangebject -M365Instance $regionString -ChangeID $entry.ID -Disposition ($entry.Disposition+"-Add") -EndpointSetID $entry.endpointSetId -Version $entry.Version -ServiceAreaDisplayName $functionServiceAreaDisplayName -IPsAddredorRemoved $entry.add.ips -URLsAddedOrRemoved $entry.add.urls -IPInSubnetOrURL $ipEntry -PreviousCategory $entry.previous.Category -PreviousExpressRoute $entry.previous.expressRoute -PreviousServiceArea $entry.previous.serviceArea -PreviousRequire $entry.previous.required -PreviousTCPPort $entry.previous.tcpPorts
+
+                    out-logfile -string $outputObject
+
+                    $global:outputChangeArray += $outputObject
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
+function test-URLChangeSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $changeDataToTest,
+        [Parameter(Mandatory = $true)]
+        $urlToTest,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionOriginalID = $null
+    $functionServiceAreaDisplayName = $NULL
+    $functionWildCard = "*"
+    $functionPeriod = "."
+    $functionSplitURLToTest = @()
+
+    out-logfile -string "Entering test-URLChangeSpace"
+
+    foreach ($entry in $changeDataToTest)
+    {
+        Out-logfile -string ("Testing change entry id: "+$entry.id)
+
+        if ($entry.add.urls.count -gt 0)
+        {
+            out-logfile -string "URL count > 0"
+
+            foreach ($urlEntry in $entry.add.urls)
+            {
+                out-logfile -string ("Testing entry url: "+$urlEntry)
+
+                out-logfile -string "Determine if the url entry is a wild card URL."
+
+                if ($urlEntry.contains($functionWildCard))
+                {
+                    $functionTestURL = calculate-WildCardURL -urlEntry $urlEntry -urlToTest $URLToTest
+                    out-logfile -string $functionTestURL
+                }
+                else
+                {
+                    $functionTestURL = $URLToTest
+                    out-logfile -string "The URL entry does not contain a wild card - use the URLToTest value."
+                }
+
+                if ($functionTestURL -eq $urlEntry)
+                {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
+
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq $NULL)
+                    {
+                        $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
                     }
+                    else
+                    {
+
+                        $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                    }
+
+                    $outputObject = create-OutputChangebject -M365Instance $regionString -ChangeID $entry.ID -Disposition ($entry.Disposition+"-Add") -EndpointSetID $entry.endpointSetId -Version $entry.Version -ServiceAreaDisplayName $functionServiceAreaDisplayName -IPsAddredorRemoved $entry.add.ips -URLsAddedOrRemoved $entry.add.urls -IPInSubnetOrURL $ipEntry -PreviousCategory $entry.previous.Category -PreviousExpressRoute $entry.previous.expressRoute -PreviousServiceArea $entry.previous.serviceArea -PreviousRequire $entry.previous.required -PreviousTCPPort $entry.previous.tcpPorts
 
                     out-logfile -string $outputObject
 
@@ -462,8 +863,7 @@ function test-IPRemoveSpace
             {
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
 
-                 $functionNetwork = [System.Net.IpNetwork]::Parse($ipEntry)
-
+                 $functionNetwork = get-IPEntry -ipEntry $ipEntry
                  out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
 
                  if ($functionNetwork.Contains($IPAddress))
@@ -481,16 +881,91 @@ function test-IPRemoveSpace
                         $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
                     }
 
-                    $outputObject = new-Object psObject -property @{
-                        M365Instance = $regionString
-                        ChangeID = $entry.ID
-                        Disposition = $entry.Disposition
-                        EndpointSetID = $entry.endpointSetId
-                        Version = $entry.Version
-                        ServiceAreaDisplayName = $functionServiceAreaDisplayName
-                        IPsRemove = $entry.remove.ips
-                        IPInSubnet = $ipEntry
+                    $outputObject = create-OutputChangebject -M365Instance $regionString -ChangeID $entry.ID -Disposition ($entry.Disposition+"-Remove") -EndpointSetID $entry.endpointSetId -Version $entry.Version -ServiceAreaDisplayName $functionServiceAreaDisplayName -IPsAddredorRemoved $entry.remove.ips -URLsAddedOrRemoved $entry.remove.urls -IPInSubnetOrURL $ipEntry -PreviousCategory $entry.previous.Category -PreviousExpressRoute $entry.previous.expressRoute -PreviousServiceArea $entry.previous.serviceArea -PreviousRequire $entry.previous.required -PreviousTCPPort $entry.previous.tcpPorts
+
+                    out-logfile -string $outputObject
+
+                    $global:outputRemoveArray += $outputObject
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    out-logfile -string "Exiting test-IPSpace"
+}
+
+function test-URLRemoveSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $changeDataToTest,
+        [Parameter(Mandatory = $true)]
+        $urlToTest,
+        [Parameter(Mandatory = $true)]
+        $RegionString
+    )
+
+    $functionOriginalID = $null
+    $functionServiceAreaDisplayName = $NULL
+    $functionWildCard = "*"
+    $functionPeriod = "."
+    $functionSplitURLToTest = @()
+
+    out-logfile -string "Entering test-URLChangeSpace"
+
+    foreach ($entry in $changeDataToTest)
+    {
+        Out-logfile -string ("Testing change entry id: "+$entry.id)
+
+        if ($entry.remove.urls.count -gt 0)
+        {
+            out-logfile -string "URL count > 0"
+
+            foreach ($urlEntry in $entry.remove.urls)
+            {
+                out-logfile -string ("Testing entry url: "+$urlEntry)
+
+                out-logfile -string "Determine if the url entry is a wild card URL."
+
+                if ($urlEntry.contains($functionWildCard))
+                {
+                    $functionTestURL = calculate-WildCardURL -urlEntry $urlEntry -urlToTest $URLToTest
+                    out-logfile -string $functionTestURL
+                }
+                else
+                {
+                    $functionTestURL = $URLToTest
+                    out-logfile -string "The URL entry does not contain a wild card - use the URLToTest value."
+                }
+
+                if ($functionTestURL -eq $urlEntry)
+                {
+                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                    $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
+
+                    if ($functionOriginalID.ServiceAreaDisplayName -eq $NULL)
+                    {
+                        $functionServiceAreaDisplayName = "Endpoint Set ID No Longer Active"
                     }
+                    else
+                    {
+
+                        $functionServiceAreaDisplayName = $functionOriginalID.ServiceAreaDisplayName
+                    }
+
+                    $outputObject = create-OutputChangebject -M365Instance $regionString -ChangeID $entry.ID -Disposition ($entry.Disposition+"-Remove") -EndpointSetID $entry.endpointSetId -Version $entry.Version -ServiceAreaDisplayName $functionServiceAreaDisplayName -IPsAddredorRemoved $entry.remove.ips -URLsAddedOrRemoved $entry.remove.urls -IPInSubnetOrURL $urlEntry -PreviousCategory $entry.previous.Category -PreviousExpressRoute $entry.previous.expressRoute -PreviousServiceArea $entry.previous.serviceArea -PreviousRequire $entry.previous.required -PreviousTCPPort $entry.previous.tcpPorts
 
                     out-logfile -string $outputObject
 
@@ -540,37 +1015,37 @@ function get-IPLocationInformation
 }
 
 Function Test-PowershellVersion
-     {
-        [cmdletbinding()]
+    {
+    [cmdletbinding()]
 
-        $functionPowerShellVersion = $NULL
+    $functionPowerShellVersion = $NULL
 
-        out-logfile -string "Entering Test-PowerShellVersion"
+    out-logfile -string "Entering Test-PowerShellVersion"
 
-        #Write function parameter information and variables to a log file.
+    #Write function parameter information and variables to a log file.
 
-        $functionPowerShellVersion = $PSVersionTable.PSVersion
+    $functionPowerShellVersion = $PSVersionTable.PSVersion
 
-        out-logfile -string "Determining powershell version."
-        out-logfile -string ("Major: "+$functionPowerShellVersion.major)
-        out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
-        out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
-        out-logfile -string $functionPowerShellVersion
+    out-logfile -string "Determining powershell version."
+    out-logfile -string ("Major: "+$functionPowerShellVersion.major)
+    out-logfile -string ("Minor: "+$functionPowerShellVersion.minor)
+    out-logfile -string ("Patch: "+$functionPowerShellVersion.patch)
+    out-logfile -string $functionPowerShellVersion
 
-        if ($functionPowerShellVersion.Major -lt 7)
-        {
-            out-logfile -string "Powershell 7 and higher is required to run this script."
-            out-logfile -string "Please run module from Powershell 7.x"
-            out-logfile -string "" -isError:$true
-        }
-        else
-        {
-            out-logfile -string "Powershell version is not powershell 5.X proceed."
-        }
-
-        out-logfile -string "Exiting Test-PowerShellVersion"
-
+    if ($functionPowerShellVersion.Major -lt 7)
+    {
+        out-logfile -string "Powershell 7 and higher is required to run this script."
+        out-logfile -string "Please run module from Powershell 7.x"
+        out-logfile -string "" -isError:$true
     }
+    else
+    {
+        out-logfile -string "Powershell version is not powershell 5.X proceed."
+    }
+
+    out-logfile -string "Exiting Test-PowerShellVersion"
+
+}
 
 #=====================================================================================
 #Begin main function body.
@@ -578,31 +1053,101 @@ Function Test-PowershellVersion
 
 #Define function variables.
 
-if ($IPAddressToTest.contains("."))
-{
-    $logFileName = $IPAddressToTest.replace(".","-")
+$noIPSpecified = "0.0.0.0"
+$noURLSpecified = "nodomain.local"
+$urlSlashes = "//"
+$urlSlash = "/"
+$functionURL
+$functionDomainName
 
-    if (IsIPv4AddressValid -ip $ipAddressToTest)
+if ($IPAddressToTest -ne $noIPSpecified)
+{
+    write-host "IPAddress to test is not a null value - proceed with evaluation"
+
+    if ($IPAddressToTest.contains("."))
     {
-        out-logfile -string "Address specified is a valid IPV4 addrss."
+        $logFileName = $IPAddressToTest.replace(".","-")
+
+        if (IsIPv4AddressValid -ip $ipAddressToTest)
+        {
+            write-host "IPv4 Address is in a valid format."
+        }
+        else 
+        {
+            write-error "IPv4 address specified and is not in a valid format."
+        } 
     }
     else 
     {
-        out-logfile -string "IPv4 address specified but is in improper format." -isError:$true
-    } 
+        $logFileName = $IPAddressToTest.replace(":","-")
+
+        if (IsIPv6AddressValid -ip $ipAddressToTest)
+        {
+            write-host "IPv6 address specified and is in proper format."
+        }
+        else 
+        {
+             write-error "IPv6 address specified and is not in a valid format."
+        } 
+    }
+}
+elseif ($URLToTest -ne $noURLSpecified)
+{
+    write-host "URL to test is not a null value - proceed with evaluation."
+
+    write-host "Determine if the URL is specified as a domain name <or> web address."
+
+    if ($urlToTest.contains($urlSlashes))
+    {
+        write-host "URL specified - break URL"
+
+        $functionURL = $urlToTest.split($urlSlashes)
+
+        foreach ($member in $functionURL)
+        {
+            write-host $member
+        }
+
+        write-host "Determine if more of the URL is specified."
+
+        if ($functionURL[1].contains($urlSlash))
+        {
+            write-host "URL contains more information - break URL."
+
+            $functionURL = $functionURL.split($urlSlash)
+
+            foreach ($member in $functionURL)
+            {
+                write-host $member
+            }
+
+            write-host "Domain name represented in array location 1."
+
+            write-host "Create the log directory based off domain name."
+        }
+        else 
+        {
+            write-host "No more of a URL is specified - domain in array position 1."
+        }
+
+        $functionDomainName = $functionURL[1]
+        write-host $functionDomainName
+    }
+    else 
+    {
+        write-host "URL appears to only contain a domain name."
+
+        $functionDomainName = $URLToTest
+        $functionDomainName.replace(".","-")
+    }
+
+    $logFileName = $functionDomainName.replace(".","-")
 }
 else 
 {
-    $logFileName = $IPAddressToTest.replace(":","-")
+   write-host "Using a generic log file name."
 
-    if (IsIPv6AddressValid -ip $ipAddressToTest)
-    {
-        out-logfile -string "Address specified is a valid IPV4 addrss."
-    }
-    else 
-    {
-        out-logfile -string "IPv4 address specified but is in improper format." -isError:$true
-    } 
+   $logFileName = "Office365IPandURLTest"
 }
 
 
@@ -745,138 +1290,262 @@ $allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
 $allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
 $allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
 
-out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
-
-test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString
-test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString
-test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString
-test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString
-
-if ($global:outputArray.count -gt 0)
+if ($IPAddressToTest -ne $noIPSpecified)
 {
-    out-logfile -string "IPs found in Active Service - test for changes."
+    out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 
-    test-IPChangeSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
-    test-IPChangeSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
-    test-IPChangeSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
-    test-IPChangeSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
-}
-else 
-{
-    out-logfile -string "No IP addresses found -> no need to test for additions."
-}
-
-if ($global:outputArray.count -eq 0)
-{
-    out-logfile -string "Since the global output count is equal to 0 -> testing to see if the IP address was removed."
-
-    test-IPRemoveSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
-    test-IPRemoveSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
-    test-IPRemoveSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
-    test-IPRemoveSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
-}
-else 
-{
-    out-logfile -string "The IP address was found - no need to test for removals."
-}
-
-if ($global:outputArray.count -gt 0)
-{
-    if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)
+    test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString
+    test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString
+    test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString
+    test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString
+    
+    if ($global:outputArray.count -gt 0)
     {
-        $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
-
-        out-logfile -string $ipLocation
-
-        if ($ipLocation -ne "Failed")
+        out-logfile -string "IPs found in Active Service - test for changes."
+    
+        test-IPChangeSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+        test-IPChangeSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+        test-IPChangeSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+        test-IPChangeSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
+    }
+    else 
+    {
+        out-logfile -string "No IP addresses found -> no need to test for additions."
+    }
+    
+    if ($global:outputArray.count -eq 0)
+    {
+        out-logfile -string "Since the global output count is equal to 0 -> testing to see if the IP address was removed."
+    
+        test-IPRemoveSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+        test-IPRemoveSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+        test-IPRemoveSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+        test-IPRemoveSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
+    }
+    else 
+    {
+        out-logfile -string "The IP address was found - no need to test for removals."
+    }
+    
+    if ($global:outputArray.count -gt 0)
+    {
+        if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)
         {
-            out-logfile -string "Converting IP location JSON."
-            $ipLocation = get-jsonData -data $ipLocation
+            $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
+    
+            out-logfile -string $ipLocation
+    
+            if ($ipLocation -ne "Failed")
+            {
+                out-logfile -string "Converting IP location JSON."
+                $ipLocation = get-jsonData -data $ipLocation
+            }
         }
-    }
-
-    out-logfile -string "*"
-    out-logfile -string "**"
-    out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services.")
-
-    if ($ipLocation -ne "Failed")
-    {   
-        out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
-    }
-
-    write-host "IP entries present in the following Office 365 Services:"
-
-    foreach ($entry in $global:outputArray)
-    {
-        $entry
-    }
-
-    if ($global:outputChangeArray)
-    {
-        write-host "IP entries present in the changes file:"
-
-        foreach ($entry in $global:outputChangeArray)
+    
+        out-logfile -string "*"
+        out-logfile -string "**"
+        out-logfile -string "******************************************************"
+        out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services.")
+    
+        if ($ipLocation -ne "Failed")
+        {   
+            out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
+        }
+        else 
+        {
+            out-logfile -string "Failed to determine the IP address location."
+        }
+    
+        write-host "IP entries present in the following Office 365 Services:"
+    
+        foreach ($entry in $global:outputArray)
         {
             $entry
         }
+    
+        if ($global:outputChangeArray)
+        {
+            write-host "IP entries present in the changes file:"
+    
+            foreach ($entry in $global:outputChangeArray)
+            {
+                $entry
+            }
+        }
+    
+        out-logfile -string "A XML file containing the above entries is available in the log directory."
+        out-logfile -string "******************************************************"
+        out-logfile -string "**"
+        out-logfile -string "*"
+    
+        if ($global:outputArray.count -gt 0)
+        {
+            out-logfile -string ""
+            out-logfile -string "IPs was located in the following service description:"
+            out-logfile -string ""
+    
+            foreach ($entry in $global:outputArray)
+            {
+                out-logfile -string $entry
+            }
+        
+            $global:outputArray | Export-Clixml -Path $outputXMLFile
+        }
+    
+        if ($global:outputChangeArray.count -gt 0)
+        {
+            out-logfile -string ""
+            out-logfile -string "IP was located in the following version additions since 2018:"
+            out-logfile -string ""
+    
+            foreach ($entry in $global:outputChangeArray)
+            {
+                out-logfile -string $entry
+            }
+    
+            $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
+        }  
     }
+    else 
+    {
+        out-logfile -string "******************************************************"
+        out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
+        out-logfile -string "******************************************************"
+    
+        if ($global:outputRemoveArray.count -gt 0)
+        {
+            write-host "The following changes removed the IP address:"
+    
+            foreach ($entry in $global:outputRemoveArray)
+            {
+                $entry
+            }
+    
+            foreach ($entry in $global:outputRemoveArray)
+            {
+                out-logfile -string $entry
+            }
+    
+            $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+        }
+    }
+}
+elseif ($urlToTest -ne $noURLSpecified)
+{
+    out-logfile -string "Begin testing URL spaces for presence of the specified IP address."
 
-    out-logfile -string "A XML file containing the above entries is available in the log directory."
-    out-logfile -string "******************************************************"
-    out-logfile -string "**"
-    out-logfile -string "*"
+    test-URLSpace -dataToTest $allIPInformationWorldWide -urlToTest $functionDomainName -regionString $worldWideRegionString
+    test-URLSpace -dataToTest $allIPInformationChina -urlToTest $functionDomainName -regionString $chinaRegionString
+    test-URLSpace -dataToTest $allIPInfomrationUSGovGCCHigh -urlToTest $functionDomainName -regionString $gccHighRegionString
+    test-URLSpace -dataToTest $allIPInformationUSGovDOD -urlToTest $functionDomainName -regionString $dodRegionString
 
     if ($global:outputArray.count -gt 0)
     {
-        out-logfile -string ""
-        out-logfile -string "IPs was located in the following service description:"
-        out-logfile -string ""
-
-        foreach ($entry in $global:outputArray)
-        {
-            out-logfile -string $entry
-        }
+        out-logfile -string "IPs found in Active Service - test for changes."
     
-        $global:outputArray | Export-Clixml -Path $outputXMLFile
+        test-URLChangeSpace -dataToTest $allIPInformationWorldWide -urlToTest $urlToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+        test-URLChangeSpace -dataToTest $allIPInformationChina -urlToTest $urlToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+        test-URLChangeSpace -dataToTest $allIPInfomrationUSGovGCCHigh -urlToTest $urlToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+        test-URLChangeSpace -dataToTest $allIPInformationUSGovDOD -urlToTest $urlToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
+    }
+    else 
+    {
+        out-logfile -string "No IP addresses found -> no need to test for additions."
     }
 
-    if ($global:outputChangeArray.count -gt 0)
+    if ($global:outputArray.count -eq 0)
     {
-        out-logfile -string ""
-        out-logfile -string "IP was located in the following version additions since 2018:"
-        out-logfile -string ""
-
-        foreach ($entry in $global:outputChangeArray)
-        {
-            out-logfile -string $entry
-        }
-
-        $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
-    }  
-}
-else 
-{
-    out-logfile -string "******************************************************"
-    out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
-    out-logfile -string "******************************************************"
-
-    if ($global:outputRemoveArray.count -gt 0)
+        out-logfile -string "Since the global output count is equal to 0 -> testing to see if the IP address was removed."
+    
+        test-URLRemoveSpace -dataToTest $allIPInformationWorldWide -urlToTest $URLToTest -regionString $worldWideRegionString -changeDataToTest $allIPChangeInformationWorldWide
+        test-URLRemoveSpace -dataToTest $allIPInformationChina -urlToTest $URLToTest -regionString $chinaRegionString -changeDataToTest $allIPChangeInformationChina
+        test-URLRemoveSpace -dataToTest $allIPInfomrationUSGovGCCHigh -urlToTest $URLToTest -regionString $gccHighRegionString -changeDataToTest $allIPChangeInfomrationUSGovGCCHigh
+        test-URLRemoveSpace -dataToTest $allIPInformationUSGovDOD -urlToTest $URLToTest -regionString $dodRegionString -changeDataToTest $allIPChangeInformationUSGovDOD
+    }
+    else 
     {
-        write-host "The following changes removed the IP address:"
+        out-logfile -string "The IP address was found - no need to test for removals."
+    }
 
-        foreach ($entry in $global:outputRemoveArray)
+    if ($global:outputArray.count -gt 0)
+    {
+        out-logfile -string "*"
+        out-logfile -string "**"
+        out-logfile -string "******************************************************"
+            
+        write-host "URL entries present in the following Office 365 Services:"
+    
+        foreach ($entry in $global:outputArray)
         {
             $entry
         }
-
-        foreach ($entry in $global:outputRemoveArray)
+    
+        if ($global:outputChangeArray)
         {
-            out-logfile -string $entry
+            write-host "IP entries present in the changes file:"
+    
+            foreach ($entry in $global:outputChangeArray)
+            {
+                $entry
+            }
         }
-
-        $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+    
+        out-logfile -string "A XML file containing the above entries is available in the log directory."
+        out-logfile -string "******************************************************"
+        out-logfile -string "**"
+        out-logfile -string "*"
+    
+        if ($global:outputArray.count -gt 0)
+        {
+            out-logfile -string ""
+            out-logfile -string "URLs was located in the following service description:"
+            out-logfile -string ""
+    
+            foreach ($entry in $global:outputArray)
+            {
+                out-logfile -string $entry
+            }
+        
+            $global:outputArray | Export-Clixml -Path $outputXMLFile
+        }
+    
+        if ($global:outputChangeArray.count -gt 0)
+        {
+            out-logfile -string ""
+            out-logfile -string "URL was located in the following version additions since 2018:"
+            out-logfile -string ""
+    
+            foreach ($entry in $global:outputChangeArray)
+            {
+                out-logfile -string $entry
+            }
+    
+            $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
+        }
     }
+    else 
+    {
+        out-logfile -string "******************************************************"
+        out-logfile -string ("The URL: "+$URLToTest+ " was NOT located in the following Office 365 Services.")
+        out-logfile -string "******************************************************"
 
+        out-logfile -string $global:outputRemoveArray.count.tostring()
+    
+        if ($global:outputRemoveArray.count -gt 0)
+        {
+            write-host "The following changes removed the URL:"
+    
+            foreach ($entry in $global:outputRemoveArray)
+            {
+                $entry
+            }
+    
+            foreach ($entry in $global:outputRemoveArray)
+            {
+                out-logfile -string $entry
+            }
+    
+            $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+        }
+    }
 }
-

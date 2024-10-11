@@ -43,6 +43,8 @@ Param(
     [string]$IPAddressToTest="0.0.0.0",
     [Parameter(Mandatory = $false)]
     [string]$URLToTest="nodomain.local",
+    [Parameter(Mandatory = $false)]
+    [string]$portToTest="0",
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
     [Parameter(Mandatory = $false)]
@@ -110,6 +112,10 @@ function create-OutputObject
         [Parameter(Mandatory = $true)]
         $TCPPorts,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $UDPPorts
+        [Parameter(Mandatory = $true)]
         $ExpressRoute,
         [Parameter(Mandatory = $true)]
         $Required
@@ -124,6 +130,7 @@ function create-OutputObject
         IPs = $ips
         IPInSubnetorURL = $IPInSubnetorURL
         TCPPorts = $tcpports
+        UDPPorts = $udpPorts
         ExpressRoute = $expressRoute
         Required = $required
     })
@@ -423,6 +430,8 @@ function test-IPSpace
         [Parameter(Mandatory = $true)]
         $IPAddress,
         [Parameter(Mandatory = $true)]
+        $portToTest,
+        [Parameter(Mandatory = $true)]
         $RegionString
     )
 
@@ -448,13 +457,32 @@ function test-IPSpace
 
                  if ($functionNetwork.Contains($IPAddress))
                  {
-                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+                    if ($portToTest -ne 0)
+                    {
+                        out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -expressRoute $entry.expressRoute -required $entry.required
-                        
-                    out-logfile -string $outputObject
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
+                            
+                        out-logfile -string $outputObject
 
-                    $global:outputArray += $outputObject
+                        $global:outputArray += $outputObject
+                    }
+                    else
+                    {
+                        if (($ipEntry.tcpPorts.contains($portToTest)) -or ($ipEntry.udpPorts.contains($portToTest)))
+                        {
+                            out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
+                                
+                            out-logfile -string $outputObject
+
+                            $global:outputArray += $outputObject
+                        }
+                        else {
+                            out-logfile -string "A IP entry was found matching but not to the specified port - skipping."
+                        }
+                    }
                  }
                  else
                  {
@@ -654,7 +682,7 @@ function test-URLSpace
                 {
                     out-logfile -string "The url to test is contained within the entry.  Log the service."
 
-                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -expressRoute $entry.expressRoute -required $entry.required
+                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
 
                     out-logfile -string $outputObject
 
@@ -1059,6 +1087,11 @@ $urlSlashes = "//"
 $urlSlash = "/"
 $functionURL
 $functionDomainName
+
+if (($IPToTest -ne $noIPSpecified) -and ($URLToTest -ne $noURLSpecified))
+{
+    write-error "Specify either a URL or IP to test - do not specify both in the same command."
+}
 
 if ($IPAddressToTest -ne $noIPSpecified)
 {

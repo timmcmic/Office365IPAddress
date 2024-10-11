@@ -110,15 +110,25 @@ function create-OutputObject
         [Parameter(Mandatory = $true)]
         $IPInSubnetorURL,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
         $TCPPorts,
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]
         [AllowNull()]
-        $UDPPorts
+        $UDPPorts,
         [Parameter(Mandatory = $true)]
         $ExpressRoute,
         [Parameter(Mandatory = $true)]
-        $Required
+        $Required,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Notes,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Category
     )
     
     $outputObject = new-Object psObject -property $([ordered]@{
@@ -133,6 +143,8 @@ function create-OutputObject
         UDPPorts = $udpPorts
         ExpressRoute = $expressRoute
         Required = $required
+        Notes = $notes
+        Category = $Category
     })
 
     return $outputObject
@@ -436,6 +448,7 @@ function test-IPSpace
     )
 
     $functionNetwork = $NULL
+    $functionComma = ","
 
     out-logfile -string "Entering test-IPSpace"
 
@@ -449,6 +462,8 @@ function test-IPSpace
 
             foreach ($ipEntry in $entry.ips)
             {
+                $functionPortArray = @()
+
                 out-logfile -string ("Testing entry IP: "+$ipEntry)
 
                  $functionNetwork = get-IPEntry -ipEntry $ipEntry
@@ -457,11 +472,11 @@ function test-IPSpace
 
                  if ($functionNetwork.Contains($IPAddress))
                  {
-                    if ($portToTest -ne 0)
+                    if ($portToTest -eq "0")
                     {
                         out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
                             
                         out-logfile -string $outputObject
 
@@ -469,18 +484,41 @@ function test-IPSpace
                     }
                     else
                     {
-                        if (($ipEntry.tcpPorts.contains($portToTest)) -or ($ipEntry.udpPorts.contains($portToTest)))
+                        out-logfile -string "Extracting TCP Ports from entry..."
+
+                        if ($entry.tcpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.tcpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Extracting UDP Ports from entry..."
+                        
+                        if ($entry.udpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.udpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Selecting unique ports..."
+
+                        $functionPortArray = $functionPortArray | select-object -Unique
+
+                        out-logfile -string "Removing trailing or leading spaces from any port..."
+
+                        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
+                        {
+                            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
+                            out-logfile -string $functionPortArray[$i]
+                        }
+
+                        if ($functionPortArray.contains($portToTest))
                         {
                             out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
                                 
                             out-logfile -string $outputObject
 
                             $global:outputArray += $outputObject
-                        }
-                        else {
-                            out-logfile -string "A IP entry was found matching but not to the specified port - skipping."
                         }
                     }
                  }
@@ -649,6 +687,7 @@ function test-URLSpace
 
     $functionWildCard = "*"
     $functionPeriod = "."
+    $functionComma = ","
     $functionSplitURLToTest = @()
 
     out-logfile -string "Entering test-URLSpace"
@@ -663,6 +702,7 @@ function test-URLSpace
 
             foreach ($urlEntry in $entry.URLs)
             {
+                $functionPortArray = @()
                 #If the URL entry is a wild card - rebuid the URL to test to contain the wild card.
 
                 out-logfile -string "Determine if the url entry is a wild card URL."
@@ -680,13 +720,58 @@ function test-URLSpace
 
                 if ($urlEntry -eq $functionTestURL)
                 {
-                    out-logfile -string "The url to test is contained within the entry.  Log the service."
+                    if ($portToTest -eq "0")
+                    {
+                        out-logfile -string "The IP to test is contained within the entry.  Log the service."
 
-                    $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                            
+                        out-logfile -string $outputObject
 
-                    out-logfile -string $outputObject
+                        $global:outputArray += $outputObject
+                    }
+                    else
+                    {
+                        out-logfile -string "Extracting TCP Ports from entry..."
 
-                    $global:outputArray += $outputObject
+                        if ($entry.tcpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.tcpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Extracting UDP Ports from entry..."
+                        
+                        if ($entry.udpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.udpPorts.split($functionComma)
+                        }
+
+                        foreach ($member in $functionPortArray)
+                        {
+                            out-logfile -string $member
+                        }
+
+                        out-logfile -string "Selecting unique ports..."
+
+                        $functionPortArray = $functionPortArray | select-object -Unique
+
+                        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
+                        {
+                            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
+                            out-logfile -string $functionPortArray[$i]
+                        }
+
+                        if ($functionPortArray.contains($portToTest))
+                        {
+                            out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                                
+                            out-logfile -string $outputObject
+
+                            $global:outputArray += $outputObject
+                        }
+                    }
                 }
                 else
                 {
@@ -1088,7 +1173,7 @@ $urlSlash = "/"
 $functionURL
 $functionDomainName
 
-if (($IPToTest -ne $noIPSpecified) -and ($URLToTest -ne $noURLSpecified))
+if (($IPAddressToTest -ne $noIPSpecified) -and ($URLToTest -ne $noURLSpecified))
 {
     write-error "Specify either a URL or IP to test - do not specify both in the same command."
 }
@@ -1235,6 +1320,10 @@ $global:outputRemoveArray=@()
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
+out-logfile -string $IPAddressToTest
+out-logfile -string $URLToTest
+out-logfile -string $portToTest
+
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
 $outputChangeXMLFile = $global:LogFile.replace(".log","Adds.xml")
 $outputRemoveXMLFile = $global:LogFile.replace(".log","Removes.xml")
@@ -1327,10 +1416,10 @@ if ($IPAddressToTest -ne $noIPSpecified)
 {
     out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
 
-    test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString
-    test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString
-    test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString
-    test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString
+    test-IPSpace -dataToTest $allIPInformationWorldWide -IPAddress $IPAddressToTest -regionString $worldWideRegionString -portToTest $portToTest
+    test-IPSpace -dataToTest $allIPInformationChina -IPAddress $IPAddressToTest -regionString $chinaRegionString -portToTest $portToTest
+    test-IPSpace -dataToTest $allIPInfomrationUSGovGCCHigh -IPAddress $IPAddressToTest -regionString $gccHighRegionString -portToTest $portToTest
+    test-IPSpace -dataToTest $allIPInformationUSGovDOD -IPAddress $IPAddressToTest -regionString $dodRegionString -portToTest $portToTest
     
     if ($global:outputArray.count -gt 0)
     {

@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.6
+.VERSION 1.1.7
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -130,6 +130,8 @@ function create-OutputObject
         [AllowNull()]
         $Category
     )
+
+    out-logfile -string "Entering create output object..."
     
     $outputObject = new-Object psObject -property $([ordered]@{
         M365Instance = $M365Instance
@@ -146,6 +148,8 @@ function create-OutputObject
         Notes = $notes
         Category = $Category
     })
+
+    out-logfile -string "Exiting create output object..."
 
     return $outputObject
 }
@@ -211,6 +215,8 @@ function create-OutputChangebject
         [AllowNull()]
         $PreviousTCPPort
     )
+
+    out-logfile -string "Entering create output change object..."
     
     $outputObject = new-Object psObject -property $([ordered]@{
         M365Instance = $M365Instance
@@ -228,6 +234,8 @@ function create-OutputChangebject
         PreviousRequire = $PreviousRequire
         PreviousTCPPorts = $PreviousTCPPort
     })
+
+    out-logfile -string "Exiting create output change object..."
 
     return $outputObject
 }
@@ -341,7 +349,7 @@ function get-ClientGuid
 {
     $functionClientGuid = $NULL
 
-    out-logfile -string "Entering new-ClientGuid"
+    out-logfile -string "Entering get client guid..."
 
     try
     {   
@@ -354,7 +362,7 @@ function get-ClientGuid
         out-logfile -string "Unable to obtain client GUID." -isError:$true
     }
 
-    out-logfile -string "Exiting new-ClientGuid"
+    out-logfile -string "Exiting get client guid..."
 
     return $functionClientGuid
 }
@@ -722,7 +730,7 @@ function test-URLSpace
                 {
                     if ($portToTest -eq "0")
                     {
-                        out-logfile -string "The IP to test is contained within the entry.  Log the service."
+                        out-logfile -string "The URL to test is contained within the entry.  Log the service."
 
                         $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
                             
@@ -763,7 +771,7 @@ function test-URLSpace
 
                         if ($functionPortArray.contains($portToTest))
                         {
-                            out-logfile -string "The IP to test is contained within the entry.  Log the service."
+                            out-logfile -string "The URL to test is contained within the entry.  Log the service."
 
                             $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
                                 
@@ -806,7 +814,7 @@ function test-IPChangeSpace
     $functionOriginalID = $null
     $functionServiceAreaDisplayName = $NULL
 
-    out-logfile -string "Entering test-IPSpace"
+    out-logfile -string "Entering test-IPChangeSpace"
 
     foreach ($entry in $changeDataToTest)
     {
@@ -857,7 +865,7 @@ function test-IPChangeSpace
         }
     }
 
-    out-logfile -string "Exiting test-IPSpace"
+    out-logfile -string "Exiting test-IPChangeSpace"
 }
 
 function test-URLChangeSpace
@@ -909,7 +917,7 @@ function test-URLChangeSpace
 
                 if ($functionTestURL -eq $urlEntry)
                 {
-                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+                    out-logfile -string "The URL to test is contained within the entry.  Log the service."
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
@@ -931,17 +939,17 @@ function test-URLChangeSpace
                  }
                  else
                  {
-                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                    out-logfile -string "The URL to test is not contained within the entry - move on."
                  }
             }
         }
         else 
         {
-            out-logfile -string "IP count = 0 -> skipping"
+            out-logfile -string "URL count = 0 -> skipping"
         }
     }
 
-    out-logfile -string "Exiting test-IPSpace"
+    out-logfile -string "Exiting test-URLChangeSpace"
 }
 
 function test-IPRemoveSpace
@@ -962,7 +970,7 @@ function test-IPRemoveSpace
     $functionOriginalID = $null
     $functionServiceAreaDisplayName = $NULL
 
-    out-logfile -string "Entering test-IPSpace"
+    out-logfile -string "Entering test-IPRemoveSpace"
 
     foreach ($entry in $changeDataToTest)
     {
@@ -1012,7 +1020,7 @@ function test-IPRemoveSpace
         }
     }
 
-    out-logfile -string "Exiting test-IPSpace"
+    out-logfile -string "Exiting test-IPRemoveSpace"
 }
 
 function test-URLRemoveSpace
@@ -1035,7 +1043,7 @@ function test-URLRemoveSpace
     $functionPeriod = "."
     $functionSplitURLToTest = @()
 
-    out-logfile -string "Entering test-URLChangeSpace"
+    out-logfile -string "Entering test-URLRemoveSpace"
 
     foreach ($entry in $changeDataToTest)
     {
@@ -1064,7 +1072,7 @@ function test-URLRemoveSpace
 
                 if ($functionTestURL -eq $urlEntry)
                 {
-                    out-logfile -string "The IP to test is contained within the entry.  Log the service."
+                    out-logfile -string "The URL to test is contained within the entry.  Log the service."
 
                     $functionOriginalID = $datatoTest | where {$_.id -eq $entry.EndpointSetID}
 
@@ -1086,17 +1094,17 @@ function test-URLRemoveSpace
                  }
                  else
                  {
-                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                    out-logfile -string "The URL to test is not contained within the entry - move on."
                  }
             }
         }
         else 
         {
-            out-logfile -string "IP count = 0 -> skipping"
+            out-logfile -string "URL count = 0 -> skipping"
         }
     }
 
-    out-logfile -string "Exiting test-IPSpace"
+    out-logfile -string "Exiting test-urlRemoveSpace"
 }
 
 function get-IPLocationInformation

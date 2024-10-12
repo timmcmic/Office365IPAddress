@@ -45,6 +45,8 @@ Param(
     [string]$URLToTest="nodomain.local",
     [Parameter(Mandatory = $false)]
     [string]$portToTest="0",
+    [Parameter(Mandatory = $false)]
+    [boolean]$includeAzureSearch = $false,
     [Parameter(Mandatory = $true)]
     [string]$logFolderPath=$NULL,
     [Parameter(Mandatory = $false)]
@@ -389,6 +391,60 @@ function get-Office365IPInformation
         out-logfile -string $_
         out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
     }
+
+    out-logfile -string "Exiting get-Office365IPInformation"
+
+    return $functionVersionInfo
+}
+
+function get-AzureIPInformation
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $baseURL
+    )
+
+    $functionAzureHTML = $NULL
+    $functionAzureDownloadLink = $null
+    $functionDownloadString = "click here to download manually"
+    $functionAzureDownloadData = $NULL
+
+    out-logfile -string "Entering get-AzureIPInformation"
+
+    try
+    {   
+        out-logfile -string 'Invoking web request for information...'
+        $functionAzureHTML = (Invoke-WebRequest -Uri $baseURL -errorAction:STOP).Links 
+        out-logfile -string 'Invoking web request complete...'
+    }
+    catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
+    }
+
+    for ($i = 0 ; $i -lt $functionAzureHTML.count ; $i++)
+    {
+        write-host $functionAzureHTML[$i].href
+        write-host $functionAzureHTML[$i].innerText
+    }
+
+
+   
+    exit
+
+    try
+    {   
+        out-logfile -string 'Invoking web request for information...'
+        $functionAzureDownloadData = Invoke-WebRequest -Uri $functionAzureDownloadLink.href -errorAction Stop
+        out-logfile -string 'Invoking web request complete...'
+    }
+    catch {
+        out-logfile -string $_
+        out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
+    }
+
+    exit
 
     out-logfile -string "Exiting get-Office365IPInformation"
 
@@ -1181,6 +1237,16 @@ $urlSlash = "/"
 $functionURL
 $functionDomainName
 
+if (($urlToTest -ne $noURLSpecified) -and ($includeAzureSearch -eq $True))
+{
+    write-error "Azure search does not support URL - specify only an IP address."
+}
+
+if (($portToTest -ne 0) -and ($includeAzureSearch -eq $TRUE))
+{
+    write-error "Azure search does not support port to test."
+}
+
 if (($IPAddressToTest -ne $noIPSpecified) -and ($URLToTest -ne $noURLSpecified))
 {
     write-error "Specify either a URL or IP to test - do not specify both in the same command."
@@ -1292,6 +1358,10 @@ $allIPChangeInformationChinaBaseURL = "https://endpoints.office.com/changes/chin
 $allIPChangeInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/changes/usgovgcchigh/0000000000?clientrequestid="
 $allIPChangeInformationUSGovDODBaseURL = "https://endpoints.office.com/changes/usgovdod/0000000000?clientrequestid="
 
+$azureIPInformationPublicCloud = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519"
+$azureIPInformationGovernmentCloud = "https://www.microsoft.com/en-us/download/details.aspx?id=57063" 
+$azurePublicCloud = $null
+$azureGovernmentCloud = $NULL
 
 $allIPInformationWorldWideURL = $NULL
 $allIPInformationChinaURL = $NULL
@@ -1323,6 +1393,7 @@ $ipLocation = ""
 $global:outputArray = @()
 $global:outputChangeArray=@()
 $global:outputRemoveArray=@()
+$global:outputAzureArray=@()
 
 #Create the log file.
 
@@ -1335,6 +1406,7 @@ out-logfile -string $portToTest
 $outputXMLFile = $global:LogFile.replace(".log",".xml")
 $outputChangeXMLFile = $global:LogFile.replace(".log","Adds.xml")
 $outputRemoveXMLFile = $global:LogFile.replace(".log","Removes.xml")
+$outputAzureXMLFile = $global:LogFile.replace(".log","Azure.xml")
 
 out-logfile -string $global:LogFile
 out-logfile -string $outputXMLFile
@@ -1420,6 +1492,23 @@ $allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
 $allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
 $allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
 
+out-logfile -string "Determine if it is necessary to gather Azure IP information and parse the data."
+
+if ($includeAzureSearch -eq $TRUE)
+{
+    out-logfile -string "Azure IP information is included in the query."
+    $azurePublicCloud = get-AzureIPInformation -baseURL $azureIPInformationPublicCloud
+    $azureGovernmentCloud = get-AzureIPInformation -baseURL $azureIPInformationGovernmentCloud
+
+    out-logfile -string "Gather the raw download data based on the manual download link in each location."
+
+    $azureRawDataPublicCloud = get-AzureRawData -baseHTML $azureHTMLInformationPublicCloud
+    $azureRawDataGovernmentCloud = get-AzureRawData -baseHTML $azureHTMLInformationGovernmentCloud
+
+
+    exit
+}
+
 if ($IPAddressToTest -ne $noIPSpecified)
 {
     out-logfile -string "Begin testing IP spaces for presence of the specified IP address."
@@ -1455,6 +1544,13 @@ if ($IPAddressToTest -ne $noIPSpecified)
     else 
     {
         out-logfile -string "The IP address was found - no need to test for removals."
+    }
+
+    if ($includeAzureSearch -eq $TRUE)
+    {
+        out-logfile -string "Azure IP Information was requested."
+
+        out-logfile -string "Gather HTML data associated with the azure download pages."        
     }
     
     if ($global:outputArray.count -gt 0)

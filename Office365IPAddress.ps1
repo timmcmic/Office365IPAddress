@@ -1532,16 +1532,74 @@ Function generate-HTMLData
         $IPorURLToTest
     )
 
-    $functionHTMLSuffix = "html"
+    $functionHTMLSuffix = ".html"
     $functionLogSuffix = ".log"
-    $functionHTMLFile = $global:logFiles.replace($functionLogSuffix ,$functionHTMLSuffix)
-    $functionTitle = ("IP or URL Report For: "+$IPorURLToTest)
+    $functionHTMLFile = $global:logFile.replace($functionLogSuffix,$functionHTMLSuffix)
+    $functionTitle = ("IP or URL Report: "+$IPorURLToTest)
 
     out-logfile -string "Entering generate-HTMLData"
 
-    new-html -TitleTest $IPorURLToTest -filePath $functionHTMLFile {
+    new-html -TitleText $IPorURLToTest -filePath $functionHTMLFile {
         new-htmlHeader {
-            New-HTMLTest -text $functionTitle -fontsize 24 -Color White -BackGroundColor Black -Alignment center
+            New-HTMLText -text $functionTitle -fontsize 24 -Color White -BackGroundColor Black -Alignment center
+        }
+        New-HTMLMain {
+            New-HTMLTableOption -DataStore JavaScript
+
+            if (($global:outputArray.count -gt 0) -or ($global:outputChangeArray.count -gt 0) -or ($global:outputRemoveArray.count -gt 0) -or ($global:outputAzureArray.count -gt 0))
+            {
+                if ($global:outputArray.count -gt 0)
+                {
+                    new-htmlSection -HeaderText "IP or URL Entries in Office 365"{
+                        new-htmlTable -dataTable $global:outputArray
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
+                }
+                else{
+                    new-htmlSection -HeaderText "No IP or URL Entries in Office 365"{
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Red" -BorderRadius 10px 
+                }
+
+                if ($global:outputChangeArray.count -gt 0)
+                {
+                    new-htmlSection -HeaderText "IP or URL Change Entries in Office 365"{
+                        new-htmlTable -dataTable $global:outputChangeArray
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
+                }
+                else
+                {
+                    new-htmlSection -HeaderText "No IP or URL Change Entries in Office 365"{
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Red" -BorderRadius 10px 
+                }
+
+                if ($global:outputRemoveArray.count -gt 0)
+                {
+                    new-htmlSection -HeaderText "IP or URL Remove Entries in Office 365"{
+                        new-htmlTable -dataTable $global:outputRemoveArray
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
+                }
+                else
+                {
+                    new-htmlSection -HeaderText "No IP or URL Remove Entries in Office 365"{
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Red" -BorderRadius 10px 
+                }
+
+                if ($global:outputAzureArray.count -gt 0)
+                {
+                    new-htmlSection -HeaderText "IP Entries in Azure Services"{
+                        new-htmlTable -dataTable $global:outputAzureArray
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
+                }
+                else
+                {
+                    new-htmlSection -HeaderText "No IP Entries in Azure Services"{
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Red" -BorderRadius 10px 
+                }
+            }
+            else 
+            {
+                new-htmlSection -HeaderText "No URL or IP Information in Office 365 or Azure"{
+                }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Red" -BorderRadius 10px 
+            }
         }
     } -online -ShowHTML
 
@@ -2056,4 +2114,6 @@ elseif ($urlToTest -ne $noURLSpecified)
 
         export-JSONInformation -dataToExport $global:outputRemoveArray -exportPath $outputRemoveXMLFile
     }
+
+    generate-HTMLData -IPorURLToTest $URLToTest
 }

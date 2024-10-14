@@ -1486,7 +1486,7 @@ Function Test-PowershellModule
     $functionModuleName = "PSWritehHTML"
 
     try {
-        import-module $functionModuleName -errorAction STOP
+        import-module "PSWriteHTML" -errorAction STOP
     }
     catch {
         out-logfile -string "Please install the PSWriteHTML Powershell Module using install-module PSWriteHTML" -isError:$true
@@ -1523,6 +1523,29 @@ Function get-AzureData
     out-logfile -string "Entering get-AzureData"
 
     return $functionData
+}
+
+Function generate-HTMLData
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        $IPorURLToTest
+    )
+
+    $functionHTMLSuffix = "html"
+    $functionLogSuffix = ".log"
+    $functionHTMLFile = $global:logFiles.replace($functionLogSuffix ,$functionHTMLSuffix)
+    $functionTitle = ("IP or URL Report For: "+$IPorURLToTest)
+
+    out-logfile -string "Entering generate-HTMLData"
+
+    new-html -TitleTest $IPorURLToTest -filePath $functionHTMLFile {
+        new-htmlHeader {
+            New-HTMLTest -text $functionTitle -fontsize 24 -Color White -BackGroundColor Black -Alignment center
+        }
+    } -online -ShowHTML
+
+    out-logfile -string "Exiting generate-HTMLData"
 }
 
 #=====================================================================================
@@ -1961,6 +1984,8 @@ if ($IPAddressToTest -ne $noIPSpecified)
 
         export-JSONInformation -dataToExport $global:outputAzureArray -exportPath $outputAzureXMLFile
     }
+
+    generate-HTMLData -IPorURLToTest $IPAddressToTest
 }
 elseif ($urlToTest -ne $noURLSpecified)
 {

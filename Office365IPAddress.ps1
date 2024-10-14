@@ -21,6 +21,7 @@
 
 .EXTERNALMODULEDEPENDENCIES 
 
+
 .REQUIREDSCRIPTS
 
 .EXTERNALSCRIPTDEPENDENCIES
@@ -149,6 +150,76 @@ function create-OutputObject
         Required = $required
         Notes = $notes
         Category = $Category
+    })
+
+    out-logfile -string "Exiting create output object..."
+
+    return $outputObject
+}
+
+function create-AzureutputObject
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $OverallChangeNumber,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Cloud,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Name,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $ID,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $ChangeNumber,
+        [Parameter(Mandatory = $true)]
+        $IPInSubnet,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $Region,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $RegionID,
+        [Parameter(Mandatory = $true)]
+        $Platform,
+        [Parameter(Mandatory = $true)]
+        $SystemService,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $AddressPrefixes,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [AllowNull()]
+        $NetworkFeatures
+    )
+
+    out-logfile -string "Entering create output object..."
+    
+    $outputObject = new-Object psObject -property $([ordered]@{
+        OverallChangeNumber = $OverallChangeNumber
+        Cloud = $Cloud
+        Name = $Name
+        ID = $ID
+        IPInSubnet = $IPInSubnet
+        ChangeNumbe = $ChangeNumber
+        Region = $Region
+        RegionID = $RegionID
+        Platform = $Platform
+        SystemService = $SystemService
+        AddressPrefixes = $AddressPrefixes
+        NetworkFeatures = $NetworkFeatures
     })
 
     out-logfile -string "Exiting create output object..."
@@ -397,60 +468,6 @@ function get-Office365IPInformation
     return $functionVersionInfo
 }
 
-function get-AzureIPInformation
-{
-    Param
-    (
-        [Parameter(Mandatory = $true)]
-        $baseURL
-    )
-
-    $functionAzureHTML = $NULL
-    $functionAzureDownloadLink = $null
-    $functionDownloadString = "click here to download manually"
-    $functionAzureDownloadData = $NULL
-
-    out-logfile -string "Entering get-AzureIPInformation"
-
-    try
-    {   
-        out-logfile -string 'Invoking web request for information...'
-        $functionAzureHTML = (Invoke-WebRequest -Uri $baseURL -errorAction:STOP).Links 
-        out-logfile -string 'Invoking web request complete...'
-    }
-    catch {
-        out-logfile -string $_
-        out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
-    }
-
-    for ($i = 0 ; $i -lt $functionAzureHTML.count ; $i++)
-    {
-        write-host $functionAzureHTML[$i].href
-        write-host $functionAzureHTML[$i].innerText
-    }
-
-
-   
-    exit
-
-    try
-    {   
-        out-logfile -string 'Invoking web request for information...'
-        $functionAzureDownloadData = Invoke-WebRequest -Uri $functionAzureDownloadLink.href -errorAction Stop
-        out-logfile -string 'Invoking web request complete...'
-    }
-    catch {
-        out-logfile -string $_
-        out-logfile -string "Unable to invoke web request for Office 365 URL and IP information." -isError:$TRUE
-    }
-
-    exit
-
-    out-logfile -string "Exiting get-Office365IPInformation"
-
-    return $functionVersionInfo
-}
-
 function get-webURL
 {
     Param
@@ -599,6 +616,220 @@ function test-IPSpace
     }
 
     out-logfile -string "Exiting test-IPSpace"
+}
+
+function test-AzureIPSpace
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToTest,
+        [Parameter(Mandatory = $true)]
+        $IPAddress
+    )
+
+    $functionNetwork = $NULL
+    $functionOverallChangeNumber = $dataToTest.changeNumber
+    $functionCloud = $dataToTest.cloud
+
+    out-logfile -string "Entering test-AzureIPSpace"
+
+    out-logfile -string ("Function overall change number: "+$functionOverallChangeNumber.tostring()) 
+    out-logfile -string ("Function cloud: "+$functionCloud)
+
+    foreach ($entry in $dataToTest.values)
+    {
+        $functionName = $entry.name
+        $functionID = $entry.id
+
+        out-logfile -string ("Entry Name: "+$functionName)
+        out-logfile -string ("Entry ID: "+$functionID)
+
+        foreach ($property in $entry.properties)
+        {
+            $functionChangeNumber = $property.changeNumber.tostring()
+            $functionRegion = $property.Region
+            $functionRegionID = $property.RegionID
+            $functionPlatform = $property.Platform
+            $functionSystemService = $property.systemService
+            $functionAddressPrefixes = $property.AddressPrefixes
+            $functionNetworkFeatures = $property.networkFeatures
+
+            if ($functionChangeNumber -ne $NULL)
+            {
+                out-logfile -string ("Entry change number: "+$functionChangeNumber)
+            }
+            else
+            {
+                $functionChangeNumber = ""
+            }
+
+            if ($functionRegion -ne $NULL)
+            {
+                out-logfile -string ("Entry region: "+$functionRegion)
+            }
+            else
+            {
+                $functionRegion = ""
+            }
+
+            if ($functionRegionID -ne $NULL)
+            {
+                out-logfile -string ("Entry region id: "+$functionRegionID)
+            }
+            else
+            {
+                $functionRegionID = ""
+            }
+
+            if ($functionPlatform -ne $NULL)
+            {
+                out-logfile -string ("Entry platform: "+$functionPlatform)
+            }
+            else
+            {
+                $functionPlatform = ""
+            }
+
+            if ($functionSystemService -ne $NULL)
+            {
+                out-logfile -string ("Entry system service: "+$functionSystemService)
+            }
+            else
+            {
+                $functionSystemService = ""
+            }
+
+            if ($functionAddressPrefixes -ne $NULL)
+            {
+                out-logfile -string ("Entry address prefixes: "+$functionAddressPrefixes)
+            }
+            else
+            {
+                $functionAddressPrefixes = ""
+            }
+
+            if ($functionNetworkFeatures -ne $NULL)
+            {
+                out-logfile -string ("Entry network features: "+$functionNetworkFeatures)     
+            }
+            else
+            {
+                $functionNetworkFeatures = ""
+            }
+
+            if ($property.addressPrefixes.count -gt 0)
+            {
+                out-logfile -string "There are IP addresses to test."
+
+                foreach ($ipEntry in $property.addressPrefixes)
+                {
+                    out-logfile -string ("Testing IP entry: "+$ipEntry)
+
+                    $functionNetwork = get-IPEntry -ipEntry $ipEntry
+
+                    if ($functionNetwork.Contains($IPAddress))
+                    {
+                        out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                        $outputObject = create-AzureutputObject -OverallChangeNumber $functionOverallChangeNumber -Cloud $functionCloud -Name $functionName -id $functionID -changeNumber $functionChangeNumber -region $functionRegion -regionID $functionRegionID -platform $functionPlatform -systemService $functionSystemService -AddressPrefixes $functionAddressPrefixes -networkFeatures $functionNetworkFeatures -IPInSubnet $ipEntry
+
+                        out-logfile -string $outputObject
+
+                        $global:outputAzureArray += $outputObject
+                    }
+                }
+            }
+        }
+    }
+
+    <#
+
+    foreach ($entry in $dataToTest)
+    {
+        Out-logfile -string ("Testing entry id: "+$entry.id)
+
+        if ($entry.ips.count -gt 0)
+        {
+            out-logfile -string "IP count > 0"
+
+            foreach ($ipEntry in $entry.ips)
+            {
+                $functionPortArray = @()
+
+                out-logfile -string ("Testing entry IP: "+$ipEntry)
+
+                 $functionNetwork = get-IPEntry -ipEntry $ipEntry
+
+                 out-logfile -string ("BaseAddress: "+$functionNetwork.baseAddress+ " PrefixLength: "+$functionNetwork.PrefixLength)
+
+                 if ($functionNetwork.Contains($IPAddress))
+                 {
+                    if ($portToTest -eq "0")
+                    {
+                        out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                            
+                        out-logfile -string $outputObject
+
+                        $global:outputArray += $outputObject
+                    }
+                    else
+                    {
+                        out-logfile -string "Extracting TCP Ports from entry..."
+
+                        if ($entry.tcpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.tcpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Extracting UDP Ports from entry..."
+                        
+                        if ($entry.udpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.udpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Selecting unique ports..."
+
+                        $functionPortArray = $functionPortArray | select-object -Unique
+
+                        out-logfile -string "Removing trailing or leading spaces from any port..."
+
+                        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
+                        {
+                            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
+                            out-logfile -string $functionPortArray[$i]
+                        }
+
+                        if ($functionPortArray.contains($portToTest))
+                        {
+                            out-logfile -string "The IP to test is contained within the entry.  Log the service."
+
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $ipEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                                
+                            out-logfile -string $outputObject
+
+                            $global:outputArray += $outputObject
+                        }
+                    }
+                 }
+                 else
+                 {
+                    out-logfile -string "The IP to test is not contained within the entry - move on."
+                 }
+            }
+        }
+        else 
+        {
+            out-logfile -string "IP count = 0 -> skipping"
+        }
+    }
+
+    #>
+
+    out-logfile -string "Exiting test-AzureIPSpace"
 }
 
 function get-IPEntry
@@ -1163,6 +1394,30 @@ function test-URLRemoveSpace
     out-logfile -string "Exiting test-urlRemoveSpace"
 }
 
+function export-JSONInformation
+{
+    Param
+    (
+        [Parameter(Mandatory = $true)]
+        $dataToExport,
+        [Parameter(Mandatory = $true)]
+        $exportPath
+    )
+
+    out-logfile -string "Entering export-JSONInformation"
+
+    try
+    {
+        $dataToExport | Export-Clixml $exportPath -errorAction STOP
+    }
+    catch {
+        out-logfile -string "Unable to export xml data to the directory."
+        out-logfile -string $_ -isError:$true
+    }
+
+    out-logfile -string "Exiting export-JSONInformation"
+}
+
 function get-IPLocationInformation
 {
     Param
@@ -1224,6 +1479,52 @@ Function Test-PowershellVersion
 
 }
 
+Function Test-PowershellModule
+{
+    out-logfile -string "Entering Test-PowerShellModule"
+
+    $functionModuleName = "PSWritehHTML"
+
+    try {
+        import-module $functionModuleName -errorAction STOP
+    }
+    catch {
+        out-logfile -string "Please install the PSWriteHTML Powershell Module using install-module PSWriteHTML" -isError:$true
+    }
+
+    out-logfile -string "Exiting Test-PowerShellModule"
+
+}
+
+Function get-AzureData
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        $dataLocation
+    )
+
+    $functionData = $NULL
+
+    out-logfile -string "Entering get-AzureData"
+
+    out-logfile -string $dataLocation
+
+    try {
+        $functionData = Import-Clixml $dataLocation -errorAction STOP
+    }
+    catch {
+        out-logfile -string "Unable to import the pre-gathered Azure IP information files."
+        out-logfile -string "These files are stored in the AzureIPAddress folder created in the log file direactory."
+        out-logfile -string "To enable this function run install-script AzureIPAddress"
+        out-logfile -string "Run AzureIPAddress.ps1 -logFolderPath c:\Something where c:\something is the same log folder path used with this script."
+        out-logfile -string $_ -isError:$TRUE
+    }
+
+    out-logfile -string "Entering get-AzureData"
+
+    return $functionData
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -1260,6 +1561,8 @@ if ($IPAddressToTest -ne $noIPSpecified)
     {
         $logFileName = $IPAddressToTest.replace(".","-")
 
+        write-host $logFileName
+
         if (IsIPv4AddressValid -ip $ipAddressToTest)
         {
             write-host "IPv4 Address is in a valid format."
@@ -1272,6 +1575,8 @@ if ($IPAddressToTest -ne $noIPSpecified)
     else 
     {
         $logFileName = $IPAddressToTest.replace(":","-")
+
+        write-host $logFileName
 
         if (IsIPv6AddressValid -ip $ipAddressToTest)
         {
@@ -1334,12 +1639,14 @@ elseif ($URLToTest -ne $noURLSpecified)
     }
 
     $logFileName = $functionDomainName.replace(".","-")
+    write-host $logFileName
 }
 else 
 {
    write-host "Using a generic log file name."
 
    $logFileName = "Office365IPandURLTest"
+   write-host $logFileName
 }
 
 
@@ -1357,11 +1664,6 @@ $allIPChangeInformationWorldWideBaseURL = "https://endpoints.office.com/changes/
 $allIPChangeInformationChinaBaseURL = "https://endpoints.office.com/changes/china/0000000000?clientrequestid="
 $allIPChangeInformationUSGovGCCHighBaseURL = "https://endpoints.office.com/changes/usgovgcchigh/0000000000?clientrequestid="
 $allIPChangeInformationUSGovDODBaseURL = "https://endpoints.office.com/changes/usgovdod/0000000000?clientrequestid="
-
-$azureIPInformationPublicCloud = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519"
-$azureIPInformationGovernmentCloud = "https://www.microsoft.com/en-us/download/details.aspx?id=57063" 
-$azurePublicCloud = $null
-$azureGovernmentCloud = $NULL
 
 $allIPInformationWorldWideURL = $NULL
 $allIPInformationChinaURL = $NULL
@@ -1388,6 +1690,12 @@ $chinaRegionString = "Microsoft 365 operated by 21 Vianet"
 $gccHighRegionString = "Microsoft 365 U.S. Government GCC High"
 $dodRegionString = "Microsoft 365 U.S. Government DoD"
 
+$azureDataStaticPath = "\AzureIPAddress"
+$azurePublicCloudXML = $logFolderPath+$azureDataStaticPath+"\AzureIPAddress-Public.xml"
+$azureGovernmentCloudXML = $logFolderPath+$azureDataStaticPath+"\AzureIPAddress-Government.xml"
+$azurePublicData = $null
+$azureGovernmentData = $null
+
 $ipLocation = ""
 
 $global:outputArray = @()
@@ -1399,24 +1707,55 @@ $global:outputAzureArray=@()
 
 new-logfile -logFileName $logFileName -logFolderPath $logFolderPath
 
-out-logfile -string $IPAddressToTest
-out-logfile -string $URLToTest
-out-logfile -string $portToTest
+$logFileXMLString = $logFileName+".log"
 
-$outputXMLFile = $global:LogFile.replace(".log",".xml")
-$outputChangeXMLFile = $global:LogFile.replace(".log","Adds.xml")
-$outputRemoveXMLFile = $global:LogFile.replace(".log","Removes.xml")
-$outputAzureXMLFile = $global:LogFile.replace(".log","Azure.xml")
-
-out-logfile -string $global:LogFile
-out-logfile -string $outputXMLFile
-out-logfile -string $outputChangeXMLFile
-
-#Start logging
+$allIPInformationWorldWideXML = $global:logfile.replace($logFileXMLString,"WorldWide.xml")
+$allIPInformationChinaXML = $global:logfile.replace($logFileXMLString,"China.xml")
+$allIPInformationUSGovGCCHighXML = $global:logfile.replace($logFileXMLString,"GCCHigh.xml")
+$allIPInformationUSGovDODXML = $global:logfile.replace($logFileXMLString,"DOD.xml")
+$allIPChangeInformationWorldWideXML = $global:logfile.replace($logFileXMLString,"WorldWide-Change.xml")
+$allIPChangeInformationChinaXML = $global:logfile.replace($logFileXMLString,"China-Change.xml")
+$allIPChangeInformationUSGovGCCHighXML = $global:logfile.replace($logFileXMLString,"GCCHigh-Change.xml")
+$allIPChangeInformationUSGoveDODXML = $global:logfile.replace($logFileXMLString,"DOD-Change.xml")
+$allIPAzurePublic = $global:logfile.replace($logFileXMLString,"AzurePublic.xml")
+$allIPAzureGovernment = $global:logfile.replace($logFileXMLString,"AzureGovernment.xml")
 
 out-logfile -string "*********************************************************************************"
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
+
+out-logfile -string $global:LogFile
+out-logfile -string $logFileName
+out-logfile -string $IPAddressToTest
+out-logfile -string $URLToTest
+out-logfile -string $portToTest
+
+out-logfile -string $allIPInformationWorldWideXML
+out-logfile -string $allIPInformationChinaXML
+out-logfile -string $allIPInformationUSGovGCCHighXML
+out-logfile -string $allIPInformationUSGovDODXML
+out-logfile -string $allIPChangeInformationWorldWideXML
+out-logfile -string $allIPChangeInformationChinaXML
+out-logfile -string $allIPChangeInformationUSGovGCCHighXML
+out-logfile -string $allIPChangeInformationUSGoveDODXML
+out-logfile -string $allIPAzurePublic
+out-logfile -string $allIPAzureGovernment
+out-logfile -string $azurePublicCloudXML
+out-logfile -string $azureGovernmentCloudXML
+
+$outputXMLFile = $global:LogFile.replace(".log",".xml")
+$outputChangeXMLFile = $global:LogFile.replace(".log","-Adds.xml")
+$outputRemoveXMLFile = $global:LogFile.replace(".log","-Removes.xml")
+$outputAzureXMLFile = $global:LogFile.replace(".log","-Azure.xml")
+
+out-logfile -string $outputXMLFile
+out-logfile -string $outputChangeXMLFile
+out-logfile -string $outputRemoveXMLFile
+out-logfile -string $outputAzureXMLFile
+
+#Start logging
+
+out-logfile -string "Testing powershell version..."
 
 Test-PowerShellVersion
 
@@ -1492,21 +1831,27 @@ $allIPChangeInformationChina = get-jsonData -data $allIPChangeInformationChina
 $allIPChangeInfomrationUSGovGCCHigh = get-jsonData -data $allIPChangeInfomrationUSGovGCCHigh
 $allIPChangeInformationUSGovDOD = get-jsonData -data $allIPChangeInformationUSGovDOD
 
+out-logfile -string "Export all gathered json information to the log directory for further review."
+
+export-JSONInformation -dataToExport $allIPInformationWorldWide -exportPath $allIPInformationWorldWideXML
+export-JSONInformation -dataToExport $allIPInformationChina -exportPath $allIPInformationChinaXML
+export-JSONInformation -dataToExport $allIPInfomrationUSGovGCCHigh -exportPath $allIPInformationUSGovGCCHighXML
+export-JSONInformation -dataToExport $allIPInformationUSGovDOD -exportPath $allIPInformationUSGovDODXML
+export-JSONInformation -dataToExport $allIPChangeInformationWorldWide -exportPath $allIPChangeInformationWorldWideXML
+export-JSONInformation -dataToExport $allIPChangeInformationChina -exportPath $allIPChangeInformationChinaXML
+export-JSONInformation -dataToExport $allIPChangeInfomrationUSGovGCCHigh -exportPath $allIPChangeInformationUSGovGCCHighXML
+export-JSONInformation -dataToExport $allIPChangeInformationUSGovDOD -exportPath $allIPChangeInformationUSGoveDODXML
+
 out-logfile -string "Determine if it is necessary to gather Azure IP information and parse the data."
 
 if ($includeAzureSearch -eq $TRUE)
 {
     out-logfile -string "Azure IP information is included in the query."
-    $azurePublicCloud = get-AzureIPInformation -baseURL $azureIPInformationPublicCloud
-    $azureGovernmentCloud = get-AzureIPInformation -baseURL $azureIPInformationGovernmentCloud
-
-    out-logfile -string "Gather the raw download data based on the manual download link in each location."
-
-    $azureRawDataPublicCloud = get-AzureRawData -baseHTML $azureHTMLInformationPublicCloud
-    $azureRawDataGovernmentCloud = get-AzureRawData -baseHTML $azureHTMLInformationGovernmentCloud
-
-
-    exit
+    
+    $azurePublicData = get-azureData -dataLocation $azurePublicCloudXML
+    $azureGovernmentData = get-AzureData -dataLocation $azureGovernmentCloudXML
+    export-JSONInformation -dataToExport $azurePublicData -exportPath $allIPAzurePublic
+    export-JSONInformation -dataToExport $azureGovernmentData -exportPath $allIPAzureGovernment
 }
 
 if ($IPAddressToTest -ne $noIPSpecified)
@@ -1548,112 +1893,71 @@ if ($IPAddressToTest -ne $noIPSpecified)
 
     if ($includeAzureSearch -eq $TRUE)
     {
-        out-logfile -string "Azure IP Information was requested."
+        out-logfile -string "Begin searching for IP address in azure space."
 
-        out-logfile -string "Gather HTML data associated with the azure download pages."        
+        test-AzureIPSpace -IPAddress $ipAddressToTest -dataToTest $azurePublicData
+        test-AzureIPSpace -IPAddress $ipAddressToTest -dataToTest $azureGovernmentData
     }
-    
-    if ($global:outputArray.count -gt 0)
+
+    out-logfile -string "If specified gather the IP location for the IP specified."
+
+    if (($allowQueryIPLocationInformationFromThirdParty -eq $TRUE) -and ($IPAddressToTest -ne $noIPSpecified))
     {
-        if ($allowQueryIPLocationInformationFromThirdParty -eq $TRUE)
-        {
-            $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
-    
-            out-logfile -string $ipLocation
-    
-            if ($ipLocation -ne "Failed")
-            {
-                out-logfile -string "Converting IP location JSON."
-                $ipLocation = get-jsonData -data $ipLocation
-            }
-        }
-    
-        out-logfile -string "*"
-        out-logfile -string "**"
-        out-logfile -string "******************************************************"
-        out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was located in any Office 365 Services.")
-    
+        $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
+
+        out-logfile -string $ipLocation
+
         if ($ipLocation -ne "Failed")
-        {   
-            out-logfile -string ("The IP Address geo-location is: "+$ipLocation.country)
-        }
-        else 
         {
-            out-logfile -string "Failed to determine the IP address location."
+            out-logfile -string "Converting IP location JSON."
+            $ipLocation = get-jsonData -data $ipLocation
         }
-    
-        write-host "IP entries present in the following Office 365 Services:"
-    
-        foreach ($entry in $global:outputArray)
+    }
+
+    if ($global:outputArray.count -gt 0)
+    {        
+        foreach ($member in $global:outputArray)
         {
-            $entry
+            out-logfile -string $member
+            $member
         }
-    
-        if ($global:outputChangeArray)
+
+        export-JSONInformation -dataToExport $global:outputArray -exportPath $outputXMLFile
+        
+        if ($global:outputChangeArray.count -gt 0)
         {
             write-host "IP entries present in the changes file:"
     
-            foreach ($entry in $global:outputChangeArray)
+            foreach ($member in $global:outputChangeArray)
             {
-                $entry
+                out-logfile -string $member
+                $member
             }
+
+            export-JSONInformation -dataToExport $global:outputChangeArray -exportPath $outputChangeXMLFile        
         }
-    
-        out-logfile -string "A XML file containing the above entries is available in the log directory."
-        out-logfile -string "******************************************************"
-        out-logfile -string "**"
-        out-logfile -string "*"
-    
-        if ($global:outputArray.count -gt 0)
-        {
-            out-logfile -string ""
-            out-logfile -string "IPs was located in the following service description:"
-            out-logfile -string ""
-    
-            foreach ($entry in $global:outputArray)
-            {
-                out-logfile -string $entry
-            }
-        
-            $global:outputArray | Export-Clixml -Path $outputXMLFile
-        }
-    
-        if ($global:outputChangeArray.count -gt 0)
-        {
-            out-logfile -string ""
-            out-logfile -string "IP was located in the following version additions since 2018:"
-            out-logfile -string ""
-    
-            foreach ($entry in $global:outputChangeArray)
-            {
-                out-logfile -string $entry
-            }
-    
-            $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
-        }  
     }
-    else 
+
+    if ($global:outputRemoveArray.count -gt 0)
     {
-        out-logfile -string "******************************************************"
-        out-logfile -string ("The IP Address: "+$IPAddressToTest+ " was NOT located in the following Office 365 Services.")
-        out-logfile -string "******************************************************"
-    
-        if ($global:outputRemoveArray.count -gt 0)
+        foreach ($member in $global:outputRemoveArray)
         {
-            write-host "The following changes removed the IP address:"
-    
-            foreach ($entry in $global:outputRemoveArray)
-            {
-                $entry
-            }
-    
-            foreach ($entry in $global:outputRemoveArray)
-            {
-                out-logfile -string $entry
-            }
-    
-            $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+            out-logfile -string $member
+            $member
         }
+
+        export-JSONInformation -dataToExport $global:outputRemoveArray -exportPath $outputRemoveXMLFile
+    }
+
+    if ($global:outputAzureArray.count -gt 0)
+    {
+        foreach ($member in $global:outputAzureArray)
+        {
+            out-logfile -string $member
+            $member
+        }
+
+        export-JSONInformation -dataToExport $global:outputAzureArray -exportPath $outputAzureXMLFile
     }
 }
 elseif ($urlToTest -ne $noURLSpecified)
@@ -1695,83 +1999,34 @@ elseif ($urlToTest -ne $noURLSpecified)
 
     if ($global:outputArray.count -gt 0)
     {
-        out-logfile -string "*"
-        out-logfile -string "**"
-        out-logfile -string "******************************************************"
-            
-        write-host "URL entries present in the following Office 365 Services:"
-    
         foreach ($entry in $global:outputArray)
         {
+            out-logfile -string $entry
             $entry
         }
-    
-        if ($global:outputChangeArray)
-        {
-            write-host "IP entries present in the changes file:"
-    
+
+        export-JSONInformation -dataToExport $global:outputArray -exportPath $outputXMLFile
+
+        if ($global:outputChangeArray.count -gt 0)
+        {    
             foreach ($entry in $global:outputChangeArray)
             {
+                out-logfile -string $entry
                 $entry
             }
-        }
-    
-        out-logfile -string "A XML file containing the above entries is available in the log directory."
-        out-logfile -string "******************************************************"
-        out-logfile -string "**"
-        out-logfile -string "*"
-    
-        if ($global:outputArray.count -gt 0)
-        {
-            out-logfile -string ""
-            out-logfile -string "URLs was located in the following service description:"
-            out-logfile -string ""
-    
-            foreach ($entry in $global:outputArray)
-            {
-                out-logfile -string $entry
-            }
-        
-            $global:outputArray | Export-Clixml -Path $outputXMLFile
-        }
-    
-        if ($global:outputChangeArray.count -gt 0)
-        {
-            out-logfile -string ""
-            out-logfile -string "URL was located in the following version additions since 2018:"
-            out-logfile -string ""
-    
-            foreach ($entry in $global:outputChangeArray)
-            {
-                out-logfile -string $entry
-            }
-    
-            $global:outputChangeArray | Export-Clixml -Path $outputChangeXMLFile
+
+            export-JSONInformation -dataToExport $global:outputChangeArray -exportPath outputChangeXMLFile
         }
     }
-    else 
-    {
-        out-logfile -string "******************************************************"
-        out-logfile -string ("The URL: "+$URLToTest+ " was NOT located in the following Office 365 Services.")
-        out-logfile -string "******************************************************"
 
-        out-logfile -string $global:outputRemoveArray.count.tostring()
-    
-        if ($global:outputRemoveArray.count -gt 0)
+    if ($global:outputRemoveArray.count -gt 0)
+    {
+        foreach ($entry in $global:outputRemoveArray)
         {
-            write-host "The following changes removed the URL:"
-    
-            foreach ($entry in $global:outputRemoveArray)
-            {
-                $entry
-            }
-    
-            foreach ($entry in $global:outputRemoveArray)
-            {
-                out-logfile -string $entry
-            }
-    
-            $global:outputRemoveArray | Export-Clixml -Path $outputRemoveXMLFile
+            out-logfile -string $entry
+            $entry
         }
+
+        export-JSONInformation -dataToExport $global:outputRemoveArray -exportPath $outputRemoveXMLFile
     }
 }

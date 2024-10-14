@@ -1759,6 +1759,8 @@ out-logfile -string "Testing powershell version..."
 
 Test-PowerShellVersion
 
+Test-PowershellModule
+
 out-logfile -string "Obtaining client guid for web requests."
 
 $clientGuid = get-ClientGuid

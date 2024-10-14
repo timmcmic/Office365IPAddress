@@ -1,0 +1,33 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCustomObject</T>
+      <T>System.Object</T>
+    </TN>
+    <MS>
+      <S N="M365Instance">Microsoft 365 Worldwide (+GCC)</S>
+      <I64 N="ChangeID">439</I64>
+      <S N="Disposition">Add-Add</S>
+      <I64 N="EndpointSetID">147</I64>
+      <S N="Version">2019102800</S>
+      <S N="ServiceAreaDisplayName">Microsoft 365 Common and Office Online</S>
+      <Nil N="IPsAddedorRemoved" />
+      <Obj N="URLsAddedOrRemoved" RefId="1">
+        <TN RefId="1">
+          <T>System.Object[]</T>
+          <T>System.Array</T>
+          <T>System.Object</T>
+        </TN>
+        <LST>
+          <S>*.office.com</S>
+        </LST>
+      </Obj>
+      <Nil N="IPInSubnetorURL" />
+      <Nil N="PreviousCategory" />
+      <Nil N="PreviousExpressRoute" />
+      <Nil N="PreviousServiceArea" />
+      <Nil N="PreviousRequire" />
+      <Nil N="PreviousTCPPorts" />
+    </MS>
+  </Obj>
+</Objs>

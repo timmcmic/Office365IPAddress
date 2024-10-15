@@ -1427,13 +1427,13 @@ function get-IPLocationInformation
     )
 
     $functionData = ""
-    $ipLocationProvider = "https://api.country.is/"
-    $ipLocationQuery = $ipLocationProvider+$ipAddress
+    $global:ipLocationProvider = "https://api.country.is/"
+    $global:ipLocationQuery = $global:ipLocationProvider+$ipAddress
 
     out-logfile -string "Entering get-IPLocationInformation"
 
     try {
-        $functionData = invoke-WebRequest $ipLocationQuery
+        $functionData = invoke-WebRequest $global:ipLocationQuery
     }
     catch {
         out-logfile -string $_
@@ -1777,7 +1777,7 @@ $azureGovernmentCloudXML = $logFolderPath+$azureDataStaticPath+"\AzureIPAddress-
 $azurePublicData = $null
 $azureGovernmentData = $null
 
-$ipLocation = ""
+$global:ipLocation = ""
 
 $global:outputArray = @()
 $global:outputChangeArray=@()
@@ -1986,14 +1986,14 @@ if ($IPAddressToTest -ne $noIPSpecified)
 
     if (($allowQueryIPLocationInformationFromThirdParty -eq $TRUE) -and ($IPAddressToTest -ne $noIPSpecified))
     {
-        $ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
+        $global:ipLocation = get-IPLocationInformation -ipAddress $ipAddressToTest
 
-        out-logfile -string $ipLocation
+        out-logfile -string $global:ipLocation
 
-        if ($ipLocation -ne "Failed")
+        if ($global:ipLocation -ne "Failed")
         {
             out-logfile -string "Converting IP location JSON."
-            $ipLocation = get-jsonData -data $ipLocation
+            $global:ipLocation = get-jsonData -data $global:ipLocation
         }
     }
 

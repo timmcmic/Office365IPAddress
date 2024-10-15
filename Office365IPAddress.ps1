@@ -1541,12 +1541,16 @@ Function generate-HTMLData
 
     new-html -TitleText $IPorURLToTest -filePath $functionHTMLFile {
         new-htmlHeader {
-            New-HTMLText -text $functionTitle -fontsize 24 -Color White -BackGroundColor Black -Alignment center
+            New-HTMLText -text $functionTitle -fontsize 24 -Color Black -Alignment center
         }
         New-HTMLMain {
             New-HTMLTableOption -DataStore JavaScript
 
-            new-HTMLSection -HeaderText ("IP Location Lookup: "+$global:ipLocation.country) -FontSize 16 -Color White -BackGroundColor Blue -BorderRadius 10px
+            if ($global:ipLocation -ne "Failed")
+            {
+                new-HTMLSection -HeaderText ("IP Location Lookup: "+$global:ipLocation.country) {
+                } -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue" -BorderRadius 10px -HeaderTextAlignment "Left"
+            }
 
             if (($global:outputArray.count -gt 0) -or ($global:outputChangeArray.count -gt 0) -or ($global:outputRemoveArray.count -gt 0) -or ($global:outputAzureArray.count -gt 0))
             {
@@ -1779,7 +1783,7 @@ $azureGovernmentCloudXML = $logFolderPath+$azureDataStaticPath+"\AzureIPAddress-
 $azurePublicData = $null
 $azureGovernmentData = $null
 
-$global:ipLocation = ""
+$global:ipLocation = "Failed"
 
 $global:outputArray = @()
 $global:outputChangeArray=@()

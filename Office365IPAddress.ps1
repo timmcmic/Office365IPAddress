@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.2.1
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -2100,7 +2100,7 @@ elseif ($urlToTest -ne $noURLSpecified)
                 $entry
             }
 
-            export-JSONInformation -dataToExport $global:outputChangeArray -exportPath outputChangeXMLFile
+            export-JSONInformation -dataToExport $global:outputChangeArray -exportPath $outputChangeXMLFile
         }
     }
 

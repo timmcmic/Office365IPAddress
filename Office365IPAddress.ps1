@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.1
+.VERSION 1.2.2
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -1545,6 +1545,8 @@ Function generate-HTMLData
         }
         New-HTMLMain {
             New-HTMLTableOption -DataStore JavaScript
+
+            new-HTMLSection -HeaderText ("IP Location Lookup: "+$global:ipLocation.country) -FontSize 16 -Color White -BackGroundColor Blue -BorderRadius 10px
 
             if (($global:outputArray.count -gt 0) -or ($global:outputChangeArray.count -gt 0) -or ($global:outputRemoveArray.count -gt 0) -or ($global:outputAzureArray.count -gt 0))
             {

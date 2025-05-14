@@ -927,7 +927,7 @@ function calculate-WildCardURL
     }
     elseif ($functionSplitURLToTestCount -le $functionSplitURLEntryCount)
     {
-        out-logfile -string "The URL to test is > the URL entry."
+        out-logfile -string "The URL to test is < the URL entry."
 
         for ($i = 0 ; $i -lt $functionSplitURLToTestReverse.count ; $i++)
         {
@@ -942,7 +942,7 @@ function calculate-WildCardURL
             }
         }
     }
-
+    
     foreach ($member in $functionSplit)
     {
         out-logfile -string $member
@@ -963,6 +963,7 @@ function calculate-WildCardURL
         $functionTestURL = $functionTestURL + $functionSplitReverse[$i]
     }
 
+    out-logfile -string "Returning URL to test..."
     out-logfile -string $functionTestURL
 
     return $functionTestURL
@@ -1014,6 +1015,61 @@ function test-URLSpace
                 }
 
                 if ($urlEntry -eq $functionTestURL)
+                {
+                    if ($portToTest -eq "0")
+                    {
+                        out-logfile -string "The URL to test is contained within the entry.  Log the service."
+
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                            
+                        out-logfile -string $outputObject
+
+                        $global:outputArray += $outputObject
+                    }
+                    else
+                    {
+                        out-logfile -string "Extracting TCP Ports from entry..."
+
+                        if ($entry.tcpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.tcpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Extracting UDP Ports from entry..."
+                        
+                        if ($entry.udpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.udpPorts.split($functionComma)
+                        }
+
+                        foreach ($member in $functionPortArray)
+                        {
+                            out-logfile -string $member
+                        }
+
+                        out-logfile -string "Selecting unique ports..."
+
+                        $functionPortArray = $functionPortArray | select-object -Unique
+
+                        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
+                        {
+                            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
+                            out-logfile -string $functionPortArray[$i]
+                        }
+
+                        if ($functionPortArray.contains($portToTest))
+                        {
+                            out-logfile -string "The URL to test is contained within the entry.  Log the service."
+
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                                
+                            out-logfile -string $outputObject
+
+                            $global:outputArray += $outputObject
+                        }
+                    }
+                }
+                if ($urlEntry.contains($functionTestURL))
                 {
                     if ($portToTest -eq "0")
                     {
@@ -1723,6 +1779,11 @@ elseif ($URLToTest -ne $noURLSpecified)
 
         $functionDomainName = $URLToTest
         $functionDomainName.replace(".","-")
+    }
+
+    if ($functionDomainName[0] -eq "*")
+    {
+        $functionDomainName.replace("*.","")
     }
 
     $logFileName = $functionDomainName.replace(".","-")

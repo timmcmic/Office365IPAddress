@@ -968,72 +968,6 @@ function calculate-WildCardURL
     return $functionTestURL
 }
 
-function calculate-OutputObject
-{
-    Param
-    (
-        [Parameter(Mandatory = $true)]
-        $entry,
-        [Parameter(Mandatory = $true)]
-        $RegionString,
-        [Parameter(Mandatory = $true)]
-        $PortToTest
-    )
-
-    if ($portToTest -eq "0")
-    {
-        out-logfile -string "The URL to test is contained within the entry.  Log the service."
-
-        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
-            
-        out-logfile -string $outputObject
-
-        $global:outputArray += $outputObject
-    }
-    else
-    {
-        out-logfile -string "Extracting TCP Ports from entry..."
-
-        if ($entry.tcpPorts -ne $NULL)
-        {
-            $functionPortArray += $entry.tcpPorts.split($functionComma)
-        }
-
-        out-logfile -string "Extracting UDP Ports from entry..."
-        
-        if ($entry.udpPorts -ne $NULL)
-        {
-            $functionPortArray += $entry.udpPorts.split($functionComma)
-        }
-
-        foreach ($member in $functionPortArray)
-        {
-            out-logfile -string $member
-        }
-
-        out-logfile -string "Selecting unique ports..."
-
-        $functionPortArray = $functionPortArray | select-object -Unique
-
-        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
-        {
-            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
-            out-logfile -string $functionPortArray[$i]
-        }
-
-        if ($functionPortArray.contains($portToTest))
-        {
-            out-logfile -string "The URL to test is contained within the entry.  Log the service."
-
-            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
-                
-            out-logfile -string $outputObject
-
-            $global:outputArray += $outputObject
-        }
-    }
-}
-
 function test-URLSpace
 {
     Param
@@ -1081,15 +1015,58 @@ function test-URLSpace
 
                 if ($urlEntry -eq $functionTestURL)
                 {
-                    out-logfile -string "The URL is an exact match to what was tested."
-                    
-                    calculate-OutputObject -PortToTest $portToTest -entry $entry -RegionString $RegionString
-                }
-                elseif ($urlEntry.contains($functionTestURL))
-                {
-                    out-logfile -string "The URL specified is contained within the URL tested."
+                    if ($portToTest -eq "0")
+                    {
+                        out-logfile -string "The URL to test is contained within the entry.  Log the service."
 
-                    calculate-OutputObject -PortToTest $portToTest -entry $entry -RegionString $RegionString
+                        $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                            
+                        out-logfile -string $outputObject
+
+                        $global:outputArray += $outputObject
+                    }
+                    else
+                    {
+                        out-logfile -string "Extracting TCP Ports from entry..."
+
+                        if ($entry.tcpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.tcpPorts.split($functionComma)
+                        }
+
+                        out-logfile -string "Extracting UDP Ports from entry..."
+                        
+                        if ($entry.udpPorts -ne $NULL)
+                        {
+                            $functionPortArray += $entry.udpPorts.split($functionComma)
+                        }
+
+                        foreach ($member in $functionPortArray)
+                        {
+                            out-logfile -string $member
+                        }
+
+                        out-logfile -string "Selecting unique ports..."
+
+                        $functionPortArray = $functionPortArray | select-object -Unique
+
+                        for ($i = 0 ; $i -lt $functionPortArray.count ; $i++)
+                        {
+                            $functionPortArray[$i] = $functionPortArray[$i].replace(" ","")
+                            out-logfile -string $functionPortArray[$i]
+                        }
+
+                        if ($functionPortArray.contains($portToTest))
+                        {
+                            out-logfile -string "The URL to test is contained within the entry.  Log the service."
+
+                            $outputObject = create-outputObject -m365Instance $regionString -id $entry.id -serviceArea $entry.serviceArea -serviceAreaDisplayName $entry.serviceareadisplayname -urls $entry.urls -ips $entry.ips -ipInSubnetorURL $urlEntry -tcpPorts $entry.tcpPorts -udpPorts $entry.udpPorts -expressRoute $entry.expressRoute -required $entry.required -notes $entry.notes -category $entry.category
+                                
+                            out-logfile -string $outputObject
+
+                            $global:outputArray += $outputObject
+                        }
+                    }
                 }
                 else
                 {
@@ -1635,31 +1612,6 @@ Function generate-HTMLData
     out-logfile -string "Exiting generate-HTMLData"
 }
 
-function testWildCard
-{
-     param(
-        [Parameter(Mandatory = $true)]
-        $stringToTest
-    )
-
-    $functionWildCard = "*"
-    $functionWildCardValue = "WildCard"
-    $functionReturn = $null
-
-    if ($stringToTest[0] -eq $functionWildCard)
-    {
-        write-host "Wild card url specified."
-        $functionReturn = $stringToTest.replace($functionWildCard,$functionWildCardValue)
-    }
-    else 
-    {
-        write-host "URL does not contain a wild card."
-        $functionReturn = $stringToTest
-    }
-
-    return $functionReturn
-}
-
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -1672,7 +1624,6 @@ $urlSlashes = "//"
 $urlSlash = "/"
 $functionURL
 $functionDomainName
-$functionWildCard = "*"
 
 if (($urlToTest -ne $noURLSpecified) -and ($includeAzureSearch -eq $True))
 {
@@ -1763,16 +1714,14 @@ elseif ($URLToTest -ne $noURLSpecified)
             write-host "No more of a URL is specified - domain in array position 1."
         }
 
-        write-host "Testing for wildcard Character"
-
-        $functionDomainName = TestWildCard -stringToTest $functionURL[1]
+        $functionDomainName = $functionURL[1]
         write-host $functionDomainName
     }
     else 
     {
         write-host "URL appears to only contain a domain name."
 
-        $functionDomainName = TestWildCard -stringToTest $URLToTest
+        $functionDomainName = $URLToTest
         $functionDomainName.replace(".","-")
     }
 

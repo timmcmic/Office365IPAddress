@@ -1612,6 +1612,31 @@ Function generate-HTMLData
     out-logfile -string "Exiting generate-HTMLData"
 }
 
+function testWildCard
+{
+     param(
+        [Parameter(Mandatory = $true)]
+        $stringToTest
+    )
+
+    $functionWildCard = "*"
+    $functionWildCardValue = "WildCard"
+    $functionReturn = $null
+
+    if ($stringToTest[0] -eq $functionWildCard)
+    {
+        write-host "Wild card url specified."
+        $functionReturn = $stringToTest.replace($functionWildCard,$functionWildCardValue)
+    }
+    else 
+    {
+        write-host "URL does not contain a wild card."
+        $functionReturn = $stringToTest
+    }
+
+    return $functionReturn
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -1624,6 +1649,7 @@ $urlSlashes = "//"
 $urlSlash = "/"
 $functionURL
 $functionDomainName
+$functionWildCard = "*"
 
 if (($urlToTest -ne $noURLSpecified) -and ($includeAzureSearch -eq $True))
 {
@@ -1714,14 +1740,16 @@ elseif ($URLToTest -ne $noURLSpecified)
             write-host "No more of a URL is specified - domain in array position 1."
         }
 
-        $functionDomainName = $functionURL[1]
+        write-host "Testing for wildcard Character"
+
+        $functionDomainName = TestWildCard -stringToTest $functionURL[1]
         write-host $functionDomainName
     }
     else 
     {
         write-host "URL appears to only contain a domain name."
 
-        $functionDomainName = $URLToTest
+        $functionDomainName = TestWildCard -stringToTest $functionURL[1]
         $functionDomainName.replace(".","-")
     }
 

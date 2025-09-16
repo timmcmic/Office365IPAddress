@@ -1011,6 +1011,7 @@ function test-URLSpace
                 else
                 {
                     $functionTestURL = $URLToTest
+                    $functionTestURL = "."+$functionTestURL
                     out-logfile -string "The URL entry does not contain a wild card - use the URLToTest value."
                 }
 
@@ -1069,7 +1070,7 @@ function test-URLSpace
                         }
                     }
                 }
-                if ($urlEntry.contains($functionTestURL))
+                elseif ($urlEntry.contains($functionTestURL))
                 {
                     if ($portToTest -eq "0")
                     {
@@ -1785,7 +1786,7 @@ elseif ($URLToTest -ne $noURLSpecified)
         {
             write-host "A wild card URL was specified, replacing wild card."
 
-            $functionDomainName.replace("*.","")
+            $functionDomainName=$functionDomainName.replace("*.","")
         }
         else 
         {

@@ -1779,9 +1779,17 @@ elseif ($URLToTest -ne $noURLSpecified)
 
         $functionDomainName = $URLToTest
 
+        write-host "Testing to see if a wild card URL was specified."
+
         if ($functionDomainName[0] -eq "*")
         {
+            write-host "A wild card URL was specified, replacing wild card."
+
             $functionDomainName.replace("*.","")
+        }
+        else 
+        {
+            write-host "A wild card URL was not specified."
         }
 
         write-host $functionDomainName

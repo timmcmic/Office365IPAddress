@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.2
+.VERSION 1.2.3
 
 .GUID e5d18bf9-f775-4a7a-adff-f3da4de7f72f
 
@@ -1778,12 +1778,13 @@ elseif ($URLToTest -ne $noURLSpecified)
         write-host "URL appears to only contain a domain name."
 
         $functionDomainName = $URLToTest
-        $functionDomainName.replace(".","-")
-    }
 
-    if ($functionDomainName[0] -eq "*")
-    {
-        $functionDomainName.replace("*.","")
+        if ($functionDomainName[0] -eq "*")
+        {
+            $functionDomainName.replace("*.","")
+        }
+
+        write-host $functionDomainName
     }
 
     $logFileName = $functionDomainName.replace(".","-")

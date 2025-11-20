@@ -1612,8 +1612,20 @@ Function generate-HTMLData
             {
                 #new-HTMLSection -HeaderText ("IP Location Lookup: "+$global:ipLocation.country) {
                 new-HTMLSection -HeaderText ("IP Location Information") {
-                    new-htmlTable -dataTable $global:ipLocation
-                } -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue" -BorderRadius 10px -HeaderTextAlignment "Left"
+                    New-HTMLList{
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                                new-htmlListItem -text ("IP Address: "+$global:ipLocation.ip) -fontSize 14
+                            }
+                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
             }
 
             if (($global:outputArray.count -gt 0) -or ($global:outputChangeArray.count -gt 0) -or ($global:outputRemoveArray.count -gt 0) -or ($global:outputAzureArray.count -gt 0))

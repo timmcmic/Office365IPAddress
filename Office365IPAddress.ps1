@@ -1011,7 +1011,6 @@ function test-URLSpace
                 else
                 {
                     $functionTestURL = $URLToTest
-                    $functionTestURL = "."+$functionTestURL
                     out-logfile -string "The URL entry does not contain a wild card - use the URLToTest value."
                 }
 
@@ -1484,13 +1483,19 @@ function get-IPLocationInformation
     )
 
     $functionData = ""
+    <#
     $global:ipLocationProvider = "https://api.country.is/"
     $global:ipLocationQuery = $global:ipLocationProvider+$ipAddress
+    #>
+
+    $global:ipLocationProvider = "ipinfo.io/"
+    $global:ipLocationQuery = $global:ipLocationProvider+"/"+$ipAddress+"/json"
 
     out-logfile -string "Entering get-IPLocationInformation"
 
     try {
-        $functionData = invoke-WebRequest $global:ipLocationQuery
+        #$functionData = invoke-WebRequest $global:ipLocationQuery
+        $functionData = invoke-RestMethod $global:ipLocationQuery
     }
     catch {
         out-logfile -string $_

@@ -1495,7 +1495,7 @@ function get-IPLocationInformation
 
     try {
         #$functionData = invoke-WebRequest $global:ipLocationQuery
-        $functionData = invoke-RestMethod $global:ipLocationQuery
+        $functionData = invoke-RestMethod $global:ipLocationQuery -errorAction STOP
     }
     catch {
         out-logfile -string $_

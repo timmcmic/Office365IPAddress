@@ -1613,7 +1613,6 @@ Function generate-HTMLData
                 #new-HTMLSection -HeaderText ("IP Location Lookup: "+$global:ipLocation.country) {
                 new-HTMLSection -HeaderText ("IP Location Information") {
                     new-htmlTable -dataTable $global:ipLocation
-                    }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
                 } -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue" -BorderRadius 10px -HeaderTextAlignment "Left"
             }
 

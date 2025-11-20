@@ -1721,9 +1721,48 @@ Function get-AzureIPInformation
         $logFolderPath
     )
 
-    $job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath
+    try {
+            $job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
 
-    Wait-Job $job
+            out-logfile -string "AzureIPAddress.ps1 job invoked successfully."
+    }
+    catch {
+        Out-logfile -string "Unable to invoke AzureIPAddress.ps1 script."
+        out-logfile -string $_ -isError:$true
+    }
+
+    try {
+            Wait-Job $job -ErrorAction Stop
+
+            out-logfile -string "Successfully waited for job to complete."
+    }
+    catch {
+        out-logfile -string "Unable to wait for job to complete."
+        out-logfile -string $_ -isError:$true
+    }
+
+    try {
+        $output = Receive-Job $job -ErrorAction Stop
+
+        out-logfile -string "Successfully received the job results."
+    }
+    catch {
+        out-logfile -string "Unable to receive job results."
+        out-logfile -string $_ -isError:$TRUE   
+    }
+
+    out-logfile -string $output
+
+    try {
+            Remove-Job $job -errorAction Stop
+
+            out-logfile -string "Job removed successfully."
+    }
+    catch {
+        out-logfile -string "Unable to remove job successfully."
+        out-logfile -string $_ -isError:$true
+    }
+
 
     if ($job.State -eq 'Failed') {
         out-logfile -string "Unable to utilize the script AzureIPAddress.ps1 to download Azure IP address information for verification."
@@ -2074,7 +2113,7 @@ if ($includeAzureSearch -eq $TRUE)
 {
     out-logfile -string "Obtain the Azure IP address information."
 
-    invoke-GetAzureIPInformation -logFolderPath $logFolderPath
+    Get-AzureIPInformation -logFolderPath $logFolderPath
 
     out-logfile -string "Azure IP information is included in the query."
     

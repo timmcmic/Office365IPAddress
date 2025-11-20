@@ -1617,10 +1617,10 @@ Function generate-HTMLData
                                 new-htmlListItem -text ("HostName: "+$global:ipLocation.hostname) -fontSize 14
                                 new-htmlListItem -text ("City: "+$global:ipLocation.city) -fontSize 14
                                 new-htmlListItem -text ("Region: "+$global:ipLocation.region) -fontSize 14
-                                new-htmlListItem -text ("County: "+$global:ipLocation.county) -fontSize 14
+                                new-htmlListItem -text ("County: "+$global:ipLocation.country) -fontSize 14
                                 new-htmlListItem -text ("Location: "+$global:ipLocation.loc) -fontSize 14
                                 new-htmlListItem -text ("Organization: "+$global:ipLocation.org) -fontSize 14
-                                new-htmlListItem -text ("Postal: "+$global:ipLocation.posta) -fontSize 14
+                                new-htmlListItem -text ("Postal: "+$global:ipLocation.postal) -fontSize 14
                             }
                     }-HeaderTextAlignment "Left" -HeaderTextSize "16" -HeaderTextColor "White" -HeaderBackGroundColor "Blue"  -CanCollapse -BorderRadius 10px -collapsed
             }

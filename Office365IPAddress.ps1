@@ -2072,11 +2072,15 @@ if ($IPAddressToTest -ne $noIPSpecified)
 
         out-logfile -string $global:ipLocation
 
+        <#
+
         if ($global:ipLocation -ne "Failed")
         {
             out-logfile -string "Converting IP location JSON."
             $global:ipLocation = get-jsonData -data $global:ipLocation
         }
+
+        #>
     }
 
     if ($global:outputArray.count -gt 0)

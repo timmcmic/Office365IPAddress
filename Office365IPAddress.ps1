@@ -1685,6 +1685,56 @@ Function generate-HTMLData
     out-logfile -string "Exiting generate-HTMLData"
 }
 
+Function get-AzureData
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        $dataLocation
+    )
+
+    $functionData = $NULL
+
+    out-logfile -string "Entering get-AzureData"
+
+    out-logfile -string $dataLocation
+
+    try {
+        $functionData = Import-Clixml $dataLocation -errorAction STOP
+    }
+    catch {
+        out-logfile -string "Unable to import the pre-gathered Azure IP information files."
+        out-logfile -string "These files are stored in the AzureIPAddress folder created in the log file direactory."
+        out-logfile -string "To enable this function run install-script AzureIPAddress"
+        out-logfile -string "Run AzureIPAddress.ps1 -logFolderPath c:\Something where c:\something is the same log folder path used with this script."
+        out-logfile -string $_ -isError:$TRUE
+    }
+
+    out-logfile -string "Entering get-AzureData"
+
+    return $functionData
+}
+
+Function get-AzureIPInformation
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        $logFolderPath
+    )
+
+    $job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath
+
+    Wait-Job $job
+
+    if ($job.State -eq 'Failed') {
+        out-logfile -string "Unable to utilize the script AzureIPAddress.ps1 to download Azure IP address information for verification."
+        out-logfile -string "Please run Install-Script AzureIPAddress to ensure the script is available."
+        out-logfile -string "If the script is installed refer to the AzureIPAddress.log contained in the log file specified for this command."
+        out-logfile -string "Unable to obtain AzureIPAddress information." -isError:$true
+    } else {
+        out-logfile -string "AzureIPAddress.ps1 invoked successfully."
+    }
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -2022,6 +2072,10 @@ out-logfile -string "Determine if it is necessary to gather Azure IP information
 
 if ($includeAzureSearch -eq $TRUE)
 {
+    out-logfile -string "Obtain the Azure IP address information."
+
+    invoke-GetAzureIPInformation -logFolderPath $logFolderPath
+
     out-logfile -string "Azure IP information is included in the query."
     
     $azurePublicData = get-azureData -dataLocation $azurePublicCloudXML

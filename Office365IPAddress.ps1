@@ -1747,7 +1747,7 @@ Function get-AzureIPInformation
     out-logfile -string "Successfully waited for job to complete."
 
     try {
-            azureLog = Get-Content $azureFilePath -ErrorAction STOP
+            $azureLog = Get-Content $azureFilePath -ErrorAction STOP
     }
     catch {
         out-logfile -string "Unable to capture the AzureIPAddress log file."

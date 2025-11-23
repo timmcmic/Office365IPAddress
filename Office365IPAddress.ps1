@@ -1742,7 +1742,7 @@ Function get-AzureIPInformation
     }
 
     try {
-        $output = Receive-Job $job -ErrorAction Stop
+        $joboutput = Receive-Job $job -ErrorAction Stop -Keep
 
         out-logfile -string "Successfully received the job results."
     }
@@ -1751,7 +1751,7 @@ Function get-AzureIPInformation
         out-logfile -string $_ -isError:$TRUE   
     }
 
-    out-logfile -string $output
+    out-logfile -string $joboutput
 
     try {
             Remove-Job $job -errorAction Stop

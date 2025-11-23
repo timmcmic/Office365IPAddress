@@ -1721,48 +1721,48 @@ Function get-AzureIPInformation
         $logFolderPath
     )
 
+    $azureLogName = "AzureIPAddress.log"
+    $azureFolderName = "AzureIPAddress"
+    $azureFilePath = $logFolderPath + "\" + $azureFolderName + "\" + $azureLogName
+    $azureLog = $null
+
     try {
             $job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
-
-            out-logfile -string "AzureIPAddress.ps1 job invoked successfully."
     }
     catch {
         Out-logfile -string "Unable to invoke AzureIPAddress.ps1 script."
         out-logfile -string $_ -isError:$true
     }
 
+    out-logfile -string "AzureIPAddress.ps1 job invoked successfully."
+
     try {
             Wait-Job $job -ErrorAction Stop
-
-            out-logfile -string "Successfully waited for job to complete."
     }
     catch {
         out-logfile -string "Unable to wait for job to complete."
         out-logfile -string $_ -isError:$true
     }
 
-    try {
-        $joboutput = Receive-Job $job -ErrorAction Stop -Keep
-
-        out-logfile -string "Successfully received the job results."
-    }
-    catch {
-        out-logfile -string "Unable to receive job results."
-        out-logfile -string $_ -isError:$TRUE   
-    }
-
-    out-logfile -string $joboutput
+    out-logfile -string "Successfully waited for job to complete."
 
     try {
-            Remove-Job $job -errorAction Stop
-
-            out-logfile -string "Job removed successfully."
+            azureLog = Get-Content $azureFilePath -ErrorAction STOP
     }
     catch {
-        out-logfile -string "Unable to remove job successfully."
+        out-logfile -string "Unable to capture the AzureIPAddress log file."
         out-logfile -string $_ -isError:$true
     }
 
+    try {
+        $azureLog | Out-File -FilePath $global:LogFile -Append -ErrorAction Stop
+    }
+    catch {
+        out-logfile -string "Unable to append the AzureIPAddress log file to the current log."
+        out-logfile -string $_
+    }
+
+    out-logfile -string "AzureIPAddress log appended successfully to current log."
 
     if ($job.State -eq 'Failed') {
         out-logfile -string "Unable to utilize the script AzureIPAddress.ps1 to download Azure IP address information for verification."
@@ -1772,6 +1772,16 @@ Function get-AzureIPInformation
     } else {
         out-logfile -string "AzureIPAddress.ps1 invoked successfully."
     }
+
+    try {
+        Remove-Job $job -errorAction Stop
+    }
+    catch {
+        out-logfile -string "Unable to remove job successfully."
+        out-logfile -string $_ -isError:$true
+    }
+
+    out-logfile -string "Job removed successfully."
 }
 
 #=====================================================================================

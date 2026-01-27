@@ -1733,12 +1733,14 @@ Function get-AzureIPInformation
             #$job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
             $jobString = $azureScriptName + $azureScriptString + $logFolderPath
             out-logfile -string $jobString
-            Start-Process $processName $jobString -Wait
+            Start-Process $processName $jobString -Wait -errorAction Stop
     }
     catch {
         Out-logfile -string "Unable to invoke AzureIPAddress.ps1 script."
         out-logfile -string $_ -isError:$true
     }
+
+    <#
 
     out-logfile -string "AzureIPAddress.ps1 job invoked successfully."
 
@@ -1751,6 +1753,8 @@ Function get-AzureIPInformation
     }
 
     out-logfile -string "Successfully waited for job to complete."
+
+    #>
 
     try {
             $azureLog = Get-Content $azureFilePath -ErrorAction STOP

@@ -1774,6 +1774,8 @@ Function get-AzureIPInformation
 
     out-logfile -string "AzureIPAddress log appended successfully to current log."
 
+    <#
+
     if ($job.State -eq 'Failed') {
         out-logfile -string "Unable to utilize the script AzureIPAddress.ps1 to download Azure IP address information for verification."
         out-logfile -string "Please run Install-Script AzureIPAddress to ensure the script is available."
@@ -1792,6 +1794,7 @@ Function get-AzureIPInformation
     }
 
     out-logfile -string "Job removed successfully."
+    #>
 }
 
 #=====================================================================================

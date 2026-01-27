@@ -1726,13 +1726,14 @@ Function get-AzureIPInformation
     $azureFilePath = $logFolderPath + "\" + $azureFolderName + "\" + $azureLogName
     $azureScriptName = "AzureIPAddress.ps1"
     $azureScriptString = " -logfolderPath "
+    $processName = "Powershell.exe"
     $azureLog = $null
 
     try {
             #$job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
             $jobString = $azureScriptName + $azureScriptString + $logFolderPath
             out-logfile -string $jobString
-            Start-Sleep -s 600
+            Start-Process $processName $jobString -Wait
     }
     catch {
         Out-logfile -string "Unable to invoke AzureIPAddress.ps1 script."

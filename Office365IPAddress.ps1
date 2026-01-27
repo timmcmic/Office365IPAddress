@@ -1724,10 +1724,15 @@ Function get-AzureIPInformation
     $azureLogName = "AzureIPAddress.log"
     $azureFolderName = "AzureIPAddress"
     $azureFilePath = $logFolderPath + "\" + $azureFolderName + "\" + $azureLogName
+    $azureScriptName = "AzureIPAddress.ps1"
+    $azureScriptString = " -logfolderPath "
     $azureLog = $null
 
     try {
-            $job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
+            #$job = Start-Job -ScriptBlock { AzureIPAddress.ps1 -logFolderPath $args[0] } -PSVersion 5.1 -ArgumentList $logFolderPath -errorAction Stop
+            $jobString = $azureScriptName + $azureScriptString + $logFolderPath
+            out-logfile -string $jobString
+            Start-Sleep -s 600
     }
     catch {
         Out-logfile -string "Unable to invoke AzureIPAddress.ps1 script."

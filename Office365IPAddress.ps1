@@ -1804,13 +1804,22 @@ function test-AzureScript
         $logFolderPath
     )
 
+    $requiredScriptVersion = "1.6"
+
     try {
-        $version = Invoke-Command -ScriptBlock {AzureIPAddress.ps1 -logFodlerPath $args[0] -versionTest $args[1] -errorAction Stop} -ArgumentList $logFolderPath,$true
+        $version = Invoke-Command -ScriptBlock {AzureIPAddress.ps1 -logFolderPath $args[0] -versionTest $args[1] -errorAction Stop} -ArgumentList $logFolderPath,$true
     }
     catch {
         out-logfile -string "Error testing Azure script version."
-        out-logfile -string "From Powershell 5 please run Install-Script AzureIPAddress"
+        out-logfile -string "From Powershell 5 please run Install-Script AzureIPAddress or Update-Script AzureIPAddress if already installed."
         out-logfile -string $_ -isError:$true
+    }
+
+    if ($version -ne $requiredScriptVersion)
+    {  
+        out-logfile -string $version
+        out-logfile -string ("AzureIPAddress must be version "+$requiredScriptVersion+" to utilize script.")
+        out-logfile -string "Run Update-Script AzureIPAddress from Powershell5 to ensure up to date version." -isError:$TRUE
     }
 }
 

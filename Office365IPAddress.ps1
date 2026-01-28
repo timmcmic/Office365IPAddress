@@ -1809,7 +1809,8 @@ function test-AzureScript
     }
     catch {
         out-logfile -string "Error testing Azure script version."
-        out-logfile -string $_
+        out-logfile -string "From Powershell 5 please run Install-Script AzureIPAddress"
+        out-logfile -string $_ -isError:$true
     }
 }
 

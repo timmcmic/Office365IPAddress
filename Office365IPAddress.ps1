@@ -2136,6 +2136,10 @@ if ($includeAzureSearch -eq $TRUE)
 {
     out-logfile -string "Obtain the Azure IP address information."
 
+    out-logfile -string "***A new windows will appear in 5 seconds to obtain AzureIPInformation files.***"
+    out-logfile -string "***DO NOT CHANGE FOCUS FROM THIS WINDOW.  It will automatically close when complete.***"
+    start-sleep -s 5
+
     Get-AzureIPInformation -logFolderPath $logFolderPath
 
     out-logfile -string "Azure IP information is included in the query."

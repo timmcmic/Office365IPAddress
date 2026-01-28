@@ -1804,7 +1804,7 @@ function test-AzureScript
         $logFolderPath
     )
 
-    $requiredScriptVersion = "1.7"
+    $requiredScriptVersion = "1.8"
 
     try {
         $version = Invoke-Command -ScriptBlock {AzureIPAddress.ps1 -logFolderPath $args[0] -versionTest $args[1] -errorAction Stop} -ArgumentList $logFolderPath,$true

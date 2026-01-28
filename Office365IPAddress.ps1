@@ -1797,32 +1797,6 @@ Function get-AzureIPInformation
     #>
 }
 
-function test-AzureScript
-{
-     param(
-        [Parameter(Mandatory = $true)]
-        $logFolderPath
-    )
-
-    $requiredScriptVersion = "1.8"
-
-    try {
-        $version = Invoke-Command -ScriptBlock {AzureIPAddress.ps1 -logFolderPath $args[0] -versionTest $args[1] -errorAction Stop} -ArgumentList $logFolderPath,$true
-    }
-    catch {
-        out-logfile -string "Error testing Azure script version."
-        out-logfile -string "From Powershell 5 please run Install-Script AzureIPAddress or Update-Script AzureIPAddress if already installed."
-        out-logfile -string $_ -isError:$true
-    }
-
-    if ($version -ne $requiredScriptVersion)
-    {  
-        out-logfile -string $version
-        out-logfile -string ("AzureIPAddress must be version "+$requiredScriptVersion+" to utilize script.")
-        out-logfile -string "Run Update-Script AzureIPAddress from Powershell5 to ensure up to date version." -isError:$TRUE
-    }
-}
-
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -2036,13 +2010,6 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
-if ($includeAzureSearch -eq $TRUE)
-{
-    out-logfile -string "Test required azure script version..."
-
-    Test-AzureScript -logFolderPath $logFolderPath
-}
-
 out-logfile -string $global:LogFile
 out-logfile -string $logFileName
 out-logfile -string $IPAddressToTest
@@ -2168,11 +2135,6 @@ out-logfile -string "Determine if it is necessary to gather Azure IP information
 if ($includeAzureSearch -eq $TRUE)
 {
     out-logfile -string "Obtain the Azure IP address information."
-
-    out-logfile -string "***A new process window will open to service obtaining Azure IP Information in 5 seconds.***"
-    out-logfile -string "***Do not change focus from this Window, the process will exist automatically.***"
-
-    start-sleep -s 5
 
     Get-AzureIPInformation -logFolderPath $logFolderPath
 

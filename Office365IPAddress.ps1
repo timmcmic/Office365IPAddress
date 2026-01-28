@@ -1797,6 +1797,22 @@ Function get-AzureIPInformation
     #>
 }
 
+function test-AzureScript
+{
+     param(
+        [Parameter(Mandatory = $true)]
+        $logFolderPath
+    )
+
+    try {
+        $version = Invoke-Command -ScriptBlock {AzureIPAddress.ps1 -logFodlerPath $args[0] -versionTest $args[1] -errorAction Stop} -ArgumentList $logFolderPath,$true
+    }
+    catch {
+        out-logfile -string "Error testing Azure script version."
+        out-logfile -string $_
+    }
+}
+
 #=====================================================================================
 #Begin main function body.
 #=====================================================================================
@@ -2009,6 +2025,10 @@ $allIPAzureGovernment = $global:logfile.replace($logFileXMLString,"AzureGovernme
 out-logfile -string "*********************************************************************************"
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
+
+out-logfile -string "Test required azure script version..."
+
+Test-AzureScript -logFolderPath $logFolderPath
 
 out-logfile -string $global:LogFile
 out-logfile -string $logFileName

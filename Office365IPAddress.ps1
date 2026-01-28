@@ -2036,9 +2036,12 @@ out-logfile -string "***********************************************************
 out-logfile -string "Start Office365IPAddress"
 out-logfile -string "*********************************************************************************"
 
-out-logfile -string "Test required azure script version..."
+if ($includeAzureSearch -eq $TRUE)
+{
+    out-logfile -string "Test required azure script version..."
 
-Test-AzureScript -logFolderPath $logFolderPath
+    Test-AzureScript -logFolderPath $logFolderPath
+}
 
 out-logfile -string $global:LogFile
 out-logfile -string $logFileName
@@ -2165,6 +2168,11 @@ out-logfile -string "Determine if it is necessary to gather Azure IP information
 if ($includeAzureSearch -eq $TRUE)
 {
     out-logfile -string "Obtain the Azure IP address information."
+
+    out-logfile -string "***A new process window will open to service obtaining Azure IP Information in 5 seconds.***"
+    out-logfile -string "***Do not change focus from this Window, the process will exist automatically.***"
+
+    start-sleep -s 5
 
     Get-AzureIPInformation -logFolderPath $logFolderPath
 
